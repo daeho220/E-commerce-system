@@ -8,8 +8,8 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { PointResponseDto } from '../interfaces/dto/point-response.dto';
-import { PointRequestDto } from '../interfaces/dto/point-request.dto';
+import { PointResponseDto } from '../presentation/dto/point-response.dto';
+import { PointRequestDto } from '../presentation/dto/point-request.dto';
 
 @ApiTags('Points (Mock)')
 @Controller('points')
@@ -36,7 +36,8 @@ export class PointsMockController {
     @ApiResponse({ status: 200, description: '포인트 조회 성공', type: PointResponseDto })
     @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
     getPoint(@Param('userId') userId: number): PointResponseDto {
-        const user = this.users.find((u) => u.userId === userId);
+        const userIdNumber = Number(userId);
+        const user = this.users.find((u) => u.userId === userIdNumber);
         if (!user) {
             throw new NotFoundException(`ID가 ${userId}인 사용자를 찾을 수 없습니다.`);
         }

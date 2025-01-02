@@ -1,7 +1,7 @@
 import { Controller, Post, Body, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { PaymentResponseDto } from '../interfaces/dto/payment-response.dto';
-import { PaymentRequestDto } from '../interfaces/dto/payment-request.dto';
+import { PaymentResponseDto } from '../presentation/dto/payment-response.dto';
+import { PaymentRequestDto } from '../presentation/dto/payment-request.dto';
 
 @ApiTags('Payment (Mock)')
 @Controller('payments')

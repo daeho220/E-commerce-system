@@ -1,6 +1,6 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ProductDto } from '../interfaces/dto/product.dto';
+import { ProductDto } from '../presentation/dto/product.dto';
 
 @ApiTags('Products (Mock)')
 @Controller('products')
@@ -90,7 +90,8 @@ export class ProductsMockController {
     @ApiResponse({ status: 200, description: '상품 조회 성공', type: ProductDto })
     @ApiResponse({ status: 404, description: '상품을 찾을 수 없음' })
     getProductById(@Param('productId') productId: number): ProductDto {
-        const product = this.products.find((p) => p.productId === productId);
+        const productIdNumber = Number(productId);
+        const product = this.products.find((p) => p.productId === productIdNumber);
         if (!product) {
             throw new NotFoundException(
                 `ID가 ${productId}인 상품을 찾을 수 없습니다. ID를 확인하고 다시 시도해 주세요.`,

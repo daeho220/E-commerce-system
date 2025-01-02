@@ -10,10 +10,10 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
-import { CartItemDto } from '../interfaces/dto/cart-item.dto';
-import { AddToCartDto } from '../interfaces/dto/add-to-cart.dto';
-import { UpdateCartQuantityDto } from '../interfaces/dto/update-cart-quantity.dto';
-import { RemoveFromCartDto } from '../interfaces/dto/remove-from-cart.dto';
+import { CartItemDto } from '../presentation/dto/cart-item.dto';
+import { AddToCartDto } from '../presentation/dto/add-to-cart.dto';
+import { UpdateCartQuantityDto } from '../presentation/dto/update-cart-quantity.dto';
+import { RemoveFromCartDto } from '../presentation/dto/remove-from-cart.dto';
 
 @ApiTags('Carts (Mock)')
 @Controller('carts')
