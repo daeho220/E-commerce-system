@@ -1,7 +1,7 @@
 import { Controller, Post, Body, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CreateOrderDto } from '../application/dto/create-order.dto';
-import { OrderResponseDto } from '../application/dto/order-response.dto';
+import { CreateOrderDto } from '../interfaces/dto/create-order.dto';
+import { OrderResponseDto } from '../interfaces/dto/order-response.dto';
 
 @ApiTags('Orders (Mock)')
 @Controller('orders')

@@ -8,8 +8,8 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { PointResponseDto } from '../application/dto/point-response.dto';
-import { PointRequestDto } from '../application/dto/point-request.dto';
+import { PointResponseDto } from '../interfaces/dto/point-response.dto';
+import { PointRequestDto } from '../interfaces/dto/point-request.dto';
 
 @ApiTags('Points (Mock)')
 @Controller('points')

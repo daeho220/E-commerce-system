@@ -1,6 +1,6 @@
 import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ProductDto } from '../application/dto/product.dto';
+import { ProductDto } from '../interfaces/dto/product.dto';
 
 @ApiTags('Products (Mock)')
 @Controller('products')

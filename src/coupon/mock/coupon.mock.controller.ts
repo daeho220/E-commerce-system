@@ -8,9 +8,9 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
-import { CouponIssueRequestDto } from '../application/dto/issue-coupon-request.dto';
-import { CouponResponseDto } from '../application/dto/issue-coupon-response.dto';
-import { GetUserCouponResponseDto } from '../application/dto/get-user-coupon-response.dto';
+import { CouponIssueRequestDto } from '../interfaces/dto/issue-coupon-request.dto';
+import { CouponResponseDto } from '../interfaces/dto/issue-coupon-response.dto';
+import { GetUserCouponResponseDto } from '../interfaces/dto/get-user-coupon-response.dto';
 
 @ApiTags('Coupons (Mock)')
 @Controller('coupons')
