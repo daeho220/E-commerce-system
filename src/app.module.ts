@@ -6,8 +6,25 @@ import { PaymentModule } from './payment/payment.module';
 import { PointModule } from './point/point.module';
 import { CouponModule } from './coupon/coupon.module';
 import { CartModule } from './cart/cart.module';
+import { PrismaModule } from './database/prisma.module';
+import { ConfigModule } from '@nestjs/config';
+import { AppConfigService } from './configs/configs.service';
+
+const serviceModules = [
+    ProductModule,
+    OrderModule,
+    PaymentModule,
+    PointModule,
+    CouponModule,
+    CartModule,
+];
+
 @Module({
-    imports: [ProductModule, OrderModule, PaymentModule, PointModule, CouponModule, CartModule],
+    imports: [
+        ...serviceModules,
+        ConfigModule.forRoot(AppConfigService.getEnvConfigs()),
+        PrismaModule,
+    ],
     controllers: [],
     providers: [],
 })

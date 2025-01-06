@@ -1,0 +1,111 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model cart_items {
+  id         Int       @id
+  user_id    Int?
+  product_id Int?
+  quantity   Int?
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model coupon {
+  id                       Int       @id
+  code                     String?   @db.VarChar(255)
+  discount_amount          Int?
+  discount_type            String?   @db.VarChar(255)
+  expiration_type          String?   @db.VarChar(255)
+  expiration_days          Int?
+  absolute_expiration_date DateTime? @db.DateTime(0)
+  issue_start_date         DateTime? @db.DateTime(0)
+  issue_end_date           DateTime? @db.DateTime(0)
+  current_count            Int?
+  max_count                Int?
+  created_at               DateTime? @db.DateTime(0)
+  updated_at               DateTime? @db.DateTime(0)
+}
+
+model order {
+  id             Int       @id
+  user_id        Int?
+  user_coupon_id Int?
+  original_price Int?
+  discount_price Int?
+  total_price    Int?
+  status         String?   @db.VarChar(255)
+  created_at     DateTime? @db.DateTime(0)
+}
+
+model order_detail {
+  id                Int  @id
+  order_id          Int?
+  product_id        Int?
+  quantity          Int?
+  price_at_purchase Int?
+}
+
+model payment {
+  id             Int       @id
+  order_id       Int?
+  user_id        Int?
+  payment_method String?   @db.VarChar(255)
+  status         String?   @db.VarChar(255)
+  created_at     DateTime? @db.DateTime(0)
+}
+
+model point_history {
+  id          Int       @id
+  user_id     Int?
+  amount      Int?
+  change_type String?   @db.VarChar(255)
+  created_at  DateTime? @db.DateTime(0)
+}
+
+model product_sales_stat {
+  id             Int       @id
+  product_id     Int?
+  date           DateTime? @db.Date
+  order_count    Int?
+  sales_quantity Int?
+  sales_amount   Int?
+  created_at     DateTime? @db.DateTime(0)
+  updated_at     DateTime? @db.DateTime(0)
+
+  @@unique([product_id, date], map: "product_sales_stat_index_0")
+  @@index([date], map: "product_sales_stat_index_1")
+}
+
+model user {
+  id         Int       @id
+  user_name  String?   @db.VarChar(255)
+  point      Int?
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model user_coupon {
+  id              Int       @id
+  user_id         Int?
+  coupon_id       Int?
+  issue_date      DateTime? @db.DateTime(0)
+  expiration_date DateTime? @db.DateTime(0)
+  status          String?   @db.VarChar(255)
+}
+
+model product {
+  id           Int       @id
+  product_name String?   @db.VarChar(255)
+  price        Int?
+  status       Boolean?
+  stock        Int?
+  created_at   DateTime? @db.DateTime(0)
+  updated_at   DateTime? @db.DateTime(0)
+}
