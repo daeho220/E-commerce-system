@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { BadRequestException } from '@nestjs/common';
-import { IUserRepository, IUSER_REPOSITORY } from '../../infrastructure/user.repository.interface';
+import { IUserRepository, IUSER_REPOSITORY } from '../../domain/user.repository.interface';
 import { user as PrismaUser } from '@prisma/client';
-
+import { CommonValidator } from '../../../common/common-validator';
 describe('UserService', () => {
     let service: UserService;
     let repository: IUserRepository;
+    let commonValidator: CommonValidator;
 
     const mockUser: PrismaUser = {
         id: 1,
@@ -27,11 +28,13 @@ describe('UserService', () => {
                         findByIdwithLock: jest.fn().mockResolvedValue(mockUser),
                     },
                 },
+                CommonValidator,
             ],
         }).compile();
 
         service = module.get<UserService>(UserService);
         repository = module.get<IUserRepository>(IUSER_REPOSITORY);
+        commonValidator = module.get<CommonValidator>(CommonValidator);
     });
 
     describe('findById: 유저 조회 테스트', () => {
@@ -59,47 +62,49 @@ describe('UserService', () => {
                 // then
                 expect(result).toBeNull();
             });
+
+            // 유저 ID validation 테스트
             it('유저 ID가 0이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
                 // given
                 const userId = 0;
 
                 // when
-                await expect(service.findById(userId)).rejects.toThrow(BadRequestException);
+                expect(() => commonValidator.validateUserId(userId)).toThrow(BadRequestException);
             });
             it('유저 ID가 음수이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
                 // given
                 const userId = -1;
 
                 // when
-                await expect(service.findById(userId)).rejects.toThrow(BadRequestException);
+                expect(() => commonValidator.validateUserId(userId)).toThrow(BadRequestException);
             });
             it('유저 ID가 문자열이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
                 // given
                 const userId = 'test' as any;
 
                 // when
-                await expect(service.findById(userId)).rejects.toThrow(BadRequestException);
+                expect(() => commonValidator.validateUserId(userId)).toThrow(BadRequestException);
             });
             it('유저 ID가 실수이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
                 // given
                 const userId = 1.1;
 
                 // when
-                await expect(service.findById(userId)).rejects.toThrow(BadRequestException);
+                expect(() => commonValidator.validateUserId(userId)).toThrow(BadRequestException);
             });
             it('유저 ID가 undefined이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
                 // given
                 const userId = undefined as any;
 
                 // when
-                await expect(service.findById(userId)).rejects.toThrow(BadRequestException);
+                expect(() => commonValidator.validateUserId(userId)).toThrow(BadRequestException);
             });
             it('유저 ID가 null이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
                 // given
                 const userId = null as any;
 
                 // when
-                await expect(service.findById(userId)).rejects.toThrow(BadRequestException);
+                expect(() => commonValidator.validateUserId(userId)).toThrow(BadRequestException);
             });
         });
     });
@@ -129,48 +134,6 @@ describe('UserService', () => {
                 // then
                 expect(result).toBeNull();
                 expect(repository.findByIdwithLock).toHaveBeenCalledWith(userId);
-            });
-            it('유저 ID가 0이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
-                // given
-                const userId = 0;
-
-                // when
-                await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
-            });
-            it('유저 ID가 음수이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
-                // given
-                const userId = -1;
-
-                // when
-                await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
-            });
-            it('유저 ID가 문자열이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
-                // given
-                const userId = 'test' as any;
-
-                // when
-                await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
-            });
-            it('유저 ID가 실수이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
-                // given
-                const userId = 1.1;
-
-                // when
-                await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
-            });
-            it('유저 ID가 undefined이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
-                // given
-                const userId = undefined as any;
-
-                // when
-                await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
-            });
-            it('유저 ID가 null이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
-                // given
-                const userId = null as any;
-
-                // when
-                await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
             });
         });
     });

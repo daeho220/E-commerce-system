@@ -1,4 +1,4 @@
-import { IUserRepository } from './user.repository.interface';
+import { IUserRepository } from '../domain/user.repository.interface';
 import { user as PrismaUser } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
