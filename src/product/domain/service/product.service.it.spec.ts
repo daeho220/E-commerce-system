@@ -149,4 +149,52 @@ describe('ProductService', () => {
             await expect(service.findByIdwithLock(productId)).rejects.toThrow(BadRequestException);
         });
     });
+
+    describe('decreaseStock: 상품 재고 감소 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 상품 ID와 수량이 주어지면 재고가 감소한다', async () => {
+                // given
+                const productId = 6;
+                const quantity = 2;
+
+                // when
+                // stock = 100 - 2 = 98
+                const result = await service.decreaseStock(productId, quantity);
+
+                // then
+                expect(result.stock).toBe(98);
+            });
+        });
+
+        describe('실패 케이스', () => {
+            it('존재하지 않은 상품ID가 주어지면 에러를 던진다', async () => {
+                const nonExistentProductId = 9999;
+
+                // when & then
+                await expect(service.decreaseStock(nonExistentProductId, 1)).rejects.toThrow(
+                    '상품 정보를 찾을 수 없습니다.',
+                );
+            });
+            it('재고 감소 수량이 0이면 에러를 던진다', async () => {
+                // given
+                const productId = 6;
+                const quantity = 0;
+
+                // when & then
+                await expect(service.decreaseStock(productId, quantity)).rejects.toThrow(
+                    BadRequestException,
+                );
+            });
+            it('재고 감소 수량이 음수이면 에러를 던진다', async () => {
+                // given
+                const productId = 6;
+                const quantity = -1;
+
+                // when & then
+                await expect(service.decreaseStock(productId, quantity)).rejects.toThrow(
+                    BadRequestException,
+                );
+            });
+        });
+    });
 });
