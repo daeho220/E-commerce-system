@@ -93,7 +93,7 @@ describe('ProductService', () => {
                 const result = await service.findByIdwithLock(productId);
 
                 // then
-                expect(result?.[0].product_name).toBe('Product B');
+                expect(result?.product_name).toBe('Product B');
             });
         });
         describe('실패 케이스', () => {

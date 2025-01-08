@@ -18,7 +18,7 @@ export class ProductService {
     }
 
     // 상품 조회 with Lock
-    async findByIdwithLock(id: number): Promise<PrismaProduct[] | null> {
+    async findByIdwithLock(id: number): Promise<PrismaProduct | null> {
         this.commonValidator.validateProductId(id);
         return this.productRepository.findByIdwithLock(id);
     }

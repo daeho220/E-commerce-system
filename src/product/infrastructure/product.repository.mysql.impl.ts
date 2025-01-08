@@ -19,18 +19,16 @@ export class ProductRepository implements IProductRepository {
         return product;
     }
 
-    async findByIdwithLock(id: number): Promise<PrismaProduct[] | null> {
-        return await this.prisma.$transaction(async (prisma) => {
-            const product = await prisma.$queryRaw<PrismaProduct[]>`
-                SELECT * FROM product WHERE id = ${id} FOR UPDATE
-            `;
+    async findByIdwithLock(id: number): Promise<PrismaProduct | null> {
+        const product = await this.prisma.$queryRaw<PrismaProduct[]>`
+            SELECT * FROM product WHERE id = ${id} FOR UPDATE
+        `;
 
-            if (product.length === 0) {
-                throw new Error('상품 정보를 찾을 수 없습니다.');
-            }
+        if (product.length === 0) {
+            throw new Error('상품 정보를 찾을 수 없습니다.');
+        }
 
-            return product;
-        });
+        return product[0];
     }
 
     async decreaseStock(id: number, quantity: number): Promise<PrismaProduct> {
