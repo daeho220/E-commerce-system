@@ -93,7 +93,7 @@ describe('UserService', () => {
                 const result = await service.findByIdwithLock(userId);
 
                 // then
-                expect(result?.[0].user_name).toBe('Bob');
+                expect(result?.user_name).toBe('Bob');
             });
         });
         describe('실패 케이스', () => {

@@ -16,7 +16,7 @@ export class UserService {
         return this.userRepository.findById(id);
     }
 
-    async findByIdwithLock(id: number): Promise<PrismaUser[] | null> {
+    async findByIdwithLock(id: number): Promise<PrismaUser | null> {
         this.commonValidator.validateUserId(id);
         return this.userRepository.findByIdwithLock(id);
     }

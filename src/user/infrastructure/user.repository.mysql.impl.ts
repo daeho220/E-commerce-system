@@ -19,17 +19,15 @@ export class UserRepository implements IUserRepository {
         return user;
     }
 
-    async findByIdwithLock(id: number): Promise<PrismaUser[] | null> {
-        return await this.prisma.$transaction(async (prisma) => {
-            const user = await prisma.$queryRaw<PrismaUser[]>`
+    async findByIdwithLock(id: number): Promise<PrismaUser | null> {
+        const user = await this.prisma.$queryRaw<PrismaUser[]>`
                 SELECT * FROM user WHERE id = ${id} FOR UPDATE
             `;
 
-            if (user.length === 0) {
-                throw new Error('유저 정보를 찾을 수 없습니다.');
-            }
+        if (user.length === 0) {
+            throw new Error('유저 정보를 찾을 수 없습니다.');
+        }
 
-            return user;
-        });
+        return user[0];
     }
 }
