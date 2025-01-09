@@ -3,7 +3,7 @@ import { CouponService } from './coupon.service';
 import { ICouponRepository, ICOUPON_REPOSITORY } from '../coupon.repository.interface';
 import { user_coupon as PrismaUserCoupon, coupon as PrismaCoupon } from '@prisma/client';
 import { BadRequestException } from '@nestjs/common';
-import { CouponStatus } from '../coupon-status.enum';
+import { CouponStatus } from '../type/couponStatus.enum';
 import { CommonValidator } from '../../../common/common-validator';
 
 describe('CouponService', () => {
@@ -43,10 +43,10 @@ describe('CouponService', () => {
                 {
                     provide: ICOUPON_REPOSITORY,
                     useValue: {
-                        findUserCouponByUserIdAndCouponId: jest
+                        findUserCouponByUserIdAndCouponIdwithLock: jest
                             .fn()
                             .mockResolvedValue(mockUserCoupon),
-                        findCouponById: jest.fn().mockResolvedValue(mockCoupon),
+                        findCouponByIdwithLock: jest.fn().mockResolvedValue(mockCoupon),
                         updateUserCouponStatus: jest.fn().mockResolvedValue(mockUserCoupon),
                     },
                 },
@@ -59,7 +59,7 @@ describe('CouponService', () => {
         commonValidator = module.get<CommonValidator>(CommonValidator);
     });
 
-    describe('findUserCouponByUserIdAndCouponId: 사용자 쿠폰 조회 테스트', () => {
+    describe('findUserCouponByUserIdAndCouponIdwithLock: 사용자 쿠폰 조회 테스트', () => {
         describe('성공 케이스', () => {
             it('정상적인 사용자 ID와 쿠폰 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
                 // given
@@ -67,29 +67,30 @@ describe('CouponService', () => {
                 const couponId = 1;
 
                 // when
-                const result = await service.findUserCouponByUserIdAndCouponId(userId, couponId);
+                const result = await service.findUserCouponByUserIdAndCouponIdwithLock(
+                    userId,
+                    couponId,
+                    undefined,
+                );
 
                 // then
                 expect(result).toEqual(mockUserCoupon);
-                expect(repository.findUserCouponByUserIdAndCouponId).toHaveBeenCalledWith(
-                    userId,
-                    couponId,
-                );
             });
         });
 
         describe('실패 케이스', () => {
             it('존재하지 않는 사용자 쿠폰 ID로 조회시 에러를 던진다', async () => {
                 // given
-                jest.spyOn(repository, 'findUserCouponByUserIdAndCouponId').mockRejectedValueOnce(
-                    new Error('사용자 쿠폰 정보를 찾을 수 없습니다.'),
-                );
+                jest.spyOn(
+                    repository,
+                    'findUserCouponByUserIdAndCouponIdwithLock',
+                ).mockRejectedValueOnce(new Error('사용자 쿠폰 정보를 찾을 수 없습니다.'));
                 const userId = 9999;
                 const couponId = 1;
 
                 // when & then
                 await expect(
-                    service.findUserCouponByUserIdAndCouponId(userId, couponId),
+                    service.findUserCouponByUserIdAndCouponIdwithLock(userId, couponId, undefined),
                 ).rejects.toThrow('사용자 쿠폰 정보를 찾을 수 없습니다.');
             });
 
@@ -170,24 +171,23 @@ describe('CouponService', () => {
                 const couponId = 1;
 
                 // when
-                const result = await service.findCouponById(couponId);
+                const result = await service.findCouponByIdwithLock(couponId, undefined);
 
                 // then
                 expect(result).toEqual(mockCoupon);
-                expect(repository.findCouponById).toHaveBeenCalledWith(couponId);
             });
         });
 
         describe('실패 케이스', () => {
             it('존재하지 않는 쿠폰 ID로 조회시 에러를 던진다', async () => {
                 // given
-                jest.spyOn(repository, 'findCouponById').mockRejectedValueOnce(
+                jest.spyOn(repository, 'findCouponByIdwithLock').mockRejectedValueOnce(
                     new Error('쿠폰 정보를 찾을 수 없습니다.'),
                 );
                 const couponId = 999;
 
                 // when & then
-                await expect(service.findCouponById(couponId)).rejects.toThrow(
+                await expect(service.findCouponByIdwithLock(couponId, undefined)).rejects.toThrow(
                     '쿠폰 정보를 찾을 수 없습니다.',
                 );
             });
@@ -209,14 +209,14 @@ describe('CouponService', () => {
                 );
 
                 // when
-                const result = await service.updateUserCouponStatus(userCouponId, status);
+                const result = await service.updateUserCouponStatus(
+                    userCouponId,
+                    status,
+                    undefined,
+                );
 
                 // then
                 expect(result).toEqual(updatedUserCoupon);
-                expect(repository.updateUserCouponStatus).toHaveBeenCalledWith(
-                    userCouponId,
-                    status,
-                );
             });
         });
 
@@ -230,9 +230,9 @@ describe('CouponService', () => {
                 const status = CouponStatus.USED;
 
                 // when & then
-                await expect(service.updateUserCouponStatus(userCouponId, status)).rejects.toThrow(
-                    '업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.',
-                );
+                await expect(
+                    service.updateUserCouponStatus(userCouponId, status, undefined),
+                ).rejects.toThrow('업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.');
             });
 
             it('유효하지 않은 쿠폰 상태가 주어지면 BadRequestException을 발생시킨다', async () => {

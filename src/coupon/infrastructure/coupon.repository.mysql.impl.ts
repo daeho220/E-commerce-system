@@ -1,42 +1,54 @@
 import { ICouponRepository } from '../domain/coupon.repository.interface';
-import { coupon as PrismaCoupon, user_coupon as PrismaUserCoupon } from '@prisma/client';
+import { coupon as PrismaCoupon, user_coupon as PrismaUserCoupon, Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { getClient } from '../../common/util';
 @Injectable()
 export class CouponRepository implements ICouponRepository {
     constructor(private readonly prisma: PrismaService) {}
 
-    async findUserCouponByUserIdAndCouponId(
+    async findUserCouponByUserIdAndCouponIdwithLock(
         userId: number,
         couponId: number,
+        tx: Prisma.TransactionClient,
     ): Promise<PrismaUserCoupon | null> {
-        const coupon = await this.prisma.user_coupon.findFirst({
-            where: { user_id: userId, coupon_id: couponId },
-        });
+        const client = getClient(this.prisma, tx);
+        const coupon = await client.$queryRaw<PrismaUserCoupon[]>`  
+            SELECT * FROM user_coupon WHERE user_id = ${userId} AND coupon_id = ${couponId} FOR UPDATE
+        `;
 
-        if (!coupon) {
+        if (coupon.length === 0) {
             throw new Error('사용자 쿠폰 정보를 찾을 수 없습니다.');
         }
 
-        return coupon;
+        return coupon[0];
     }
 
-    async findCouponById(couponId: number): Promise<PrismaCoupon | null> {
-        const coupon = await this.prisma.coupon.findUnique({
-            where: { id: couponId },
-        });
+    async findCouponByIdwithLock(
+        couponId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaCoupon | null> {
+        const client = getClient(this.prisma, tx);
+        const coupon = await client.$queryRaw<PrismaCoupon[]>`
+            SELECT * FROM coupon WHERE id = ${couponId} FOR UPDATE
+        `;
 
-        if (!coupon) {
+        if (coupon.length === 0) {
             throw new Error('쿠폰 정보를 찾을 수 없습니다.');
         }
 
-        return coupon;
+        return coupon[0];
     }
 
-    async updateUserCouponStatus(userCouponId: number, status: string): Promise<PrismaUserCoupon> {
+    async updateUserCouponStatus(
+        userCouponId: number,
+        status: string,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUserCoupon> {
+        const client = getClient(this.prisma, tx);
         try {
-            return await this.prisma.user_coupon.update({
+            return await client.user_coupon.update({
                 where: { id: userCouponId },
                 data: { status },
             });

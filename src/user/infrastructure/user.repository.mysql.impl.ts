@@ -2,13 +2,15 @@ import { IUserRepository } from '../domain/user.repository.interface';
 import { user as PrismaUser } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-
+import { Prisma } from '@prisma/client';
+import { getClient } from '../../common/util';
 @Injectable()
 export class UserRepository implements IUserRepository {
     constructor(private readonly prisma: PrismaService) {}
 
-    async findById(id: number): Promise<PrismaUser | null> {
-        const user = await this.prisma.user.findUnique({
+    async findById(id: number, tx?: Prisma.TransactionClient): Promise<PrismaUser | null> {
+        const client = getClient(this.prisma, tx);
+        const user = await client.user.findUnique({
             where: { id },
         });
 
@@ -19,8 +21,9 @@ export class UserRepository implements IUserRepository {
         return user;
     }
 
-    async findByIdwithLock(id: number): Promise<PrismaUser | null> {
-        const user = await this.prisma.$queryRaw<PrismaUser[]>`
+    async findByIdwithLock(id: number, tx: Prisma.TransactionClient): Promise<PrismaUser | null> {
+        const client = getClient(this.prisma, tx);
+        const user = await client.$queryRaw<PrismaUser[]>`
                 SELECT * FROM user WHERE id = ${id} FOR UPDATE
             `;
 

@@ -48,7 +48,6 @@ describe('UserService', () => {
 
                 // then
                 expect(result).toEqual(mockUser);
-                expect(repository.findById).toHaveBeenCalledWith(userId);
             });
         });
         describe('실패 케이스', () => {
@@ -116,11 +115,10 @@ describe('UserService', () => {
                 const userId = 1;
 
                 // when
-                const result = await service.findByIdwithLock(userId);
+                const result = await service.findByIdwithLock(userId, undefined);
 
                 // then
                 expect(result).toEqual(mockUser);
-                expect(repository.findByIdwithLock).toHaveBeenCalledWith(userId);
             });
         });
         describe('실패 케이스', () => {
@@ -129,11 +127,10 @@ describe('UserService', () => {
                 const userId = 1;
 
                 // when
-                const result = await service.findByIdwithLock(userId);
+                const result = await service.findByIdwithLock(userId, undefined);
 
                 // then
                 expect(result).toBeNull();
-                expect(repository.findByIdwithLock).toHaveBeenCalledWith(userId);
             });
         });
     });

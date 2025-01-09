@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { CouponStatus } from '../coupon/domain/coupon-status.enum';
+import { CouponStatus } from '../coupon/domain/type/couponStatus.enum';
 
 export class CommonValidator {
     validateCouponId(couponId: number): void {

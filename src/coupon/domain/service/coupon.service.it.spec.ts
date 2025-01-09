@@ -3,7 +3,7 @@ import { CouponService } from './coupon.service';
 import { BadRequestException } from '@nestjs/common';
 import { CouponModule } from '../../coupon.module';
 import { PrismaModule } from '../../../database/prisma.module';
-import { CouponStatus } from '../coupon-status.enum';
+import { CouponStatus } from '../type/couponStatus.enum';
 
 describe('CouponService (Integration)', () => {
     let service: CouponService;
@@ -24,7 +24,11 @@ describe('CouponService (Integration)', () => {
                 const couponId = 6;
 
                 // when
-                const result = await service.findUserCouponByUserIdAndCouponId(userId, couponId);
+                const result = await service.findUserCouponByUserIdAndCouponIdwithLock(
+                    userId,
+                    couponId,
+                    undefined,
+                );
 
                 // then
                 expect(result).toBeDefined();
@@ -42,7 +46,7 @@ describe('CouponService (Integration)', () => {
 
                 // when & then
                 await expect(
-                    service.findUserCouponByUserIdAndCouponId(userId, couponId),
+                    service.findUserCouponByUserIdAndCouponIdwithLock(userId, couponId, undefined),
                 ).rejects.toThrow('사용자 쿠폰 정보를 찾을 수 없습니다.');
             });
 
@@ -53,7 +57,7 @@ describe('CouponService (Integration)', () => {
 
                 // when & then
                 await expect(
-                    service.findUserCouponByUserIdAndCouponId(userId, couponId),
+                    service.findUserCouponByUserIdAndCouponIdwithLock(userId, couponId, undefined),
                 ).rejects.toThrow(BadRequestException);
             });
 
@@ -64,7 +68,7 @@ describe('CouponService (Integration)', () => {
 
                 // when & then
                 await expect(
-                    service.findUserCouponByUserIdAndCouponId(userId, couponId),
+                    service.findUserCouponByUserIdAndCouponIdwithLock(userId, couponId, undefined),
                 ).rejects.toThrow(BadRequestException);
             });
         });
@@ -77,7 +81,7 @@ describe('CouponService (Integration)', () => {
                 const couponId = 1;
 
                 // when
-                const result = await service.findCouponById(couponId);
+                const result = await service.findCouponByIdwithLock(couponId, undefined);
 
                 // then
                 expect(result).toBeDefined();
@@ -91,7 +95,7 @@ describe('CouponService (Integration)', () => {
                 const couponId = 9999;
 
                 // when & then
-                await expect(service.findCouponById(couponId)).rejects.toThrow(
+                await expect(service.findCouponByIdwithLock(couponId, undefined)).rejects.toThrow(
                     '쿠폰 정보를 찾을 수 없습니다.',
                 );
             });
@@ -101,7 +105,9 @@ describe('CouponService (Integration)', () => {
                 const couponId = 0;
 
                 // when & then
-                await expect(service.findCouponById(couponId)).rejects.toThrow(BadRequestException);
+                await expect(service.findCouponByIdwithLock(couponId, undefined)).rejects.toThrow(
+                    BadRequestException,
+                );
             });
         });
     });
@@ -114,7 +120,11 @@ describe('CouponService (Integration)', () => {
                 const status = CouponStatus.USED;
 
                 // when
-                const result = await service.updateUserCouponStatus(userCouponId, status);
+                const result = await service.updateUserCouponStatus(
+                    userCouponId,
+                    status,
+                    undefined,
+                );
 
                 // then
                 expect(result).toBeDefined();
@@ -129,9 +139,9 @@ describe('CouponService (Integration)', () => {
                 const status = CouponStatus.USED;
 
                 // when & then
-                await expect(service.updateUserCouponStatus(userCouponId, status)).rejects.toThrow(
-                    '업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.',
-                );
+                await expect(
+                    service.updateUserCouponStatus(userCouponId, status, undefined),
+                ).rejects.toThrow('업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.');
             });
 
             it('유효하지 않은 쿠폰 상태가 주어지면 BadRequestException을 발생시킨다', async () => {
@@ -140,9 +150,9 @@ describe('CouponService (Integration)', () => {
                 const status = 'INVALID_STATUS' as any;
 
                 // when & then
-                await expect(service.updateUserCouponStatus(userCouponId, status)).rejects.toThrow(
-                    BadRequestException,
-                );
+                await expect(
+                    service.updateUserCouponStatus(userCouponId, status, undefined),
+                ).rejects.toThrow(BadRequestException);
             });
         });
     });

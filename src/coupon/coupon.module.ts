@@ -13,5 +13,6 @@ import { CommonValidator } from '../common/common-validator';
         { provide: ICOUPON_REPOSITORY, useClass: CouponRepository },
         CommonValidator,
     ],
+    exports: [CouponService],
 })
 export class CouponModule {}

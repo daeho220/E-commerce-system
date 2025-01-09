@@ -90,7 +90,7 @@ describe('UserService', () => {
                 const userId = 2;
 
                 // when
-                const result = await service.findByIdwithLock(userId);
+                const result = await service.findByIdwithLock(userId, undefined);
 
                 // then
                 expect(result?.user_name).toBe('Bob');
@@ -101,9 +101,9 @@ describe('UserService', () => {
                 const nonExistentuserId = 9999;
 
                 // when & then
-                await expect(service.findByIdwithLock(nonExistentuserId)).rejects.toThrow(
-                    '유저 정보를 찾을 수 없습니다.',
-                );
+                await expect(
+                    service.findByIdwithLock(nonExistentuserId, undefined),
+                ).rejects.toThrow('유저 정보를 찾을 수 없습니다.');
             });
         });
         it('유저 ID가 0이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
@@ -111,42 +111,54 @@ describe('UserService', () => {
             const userId = 0;
 
             // when & then
-            await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
+            await expect(service.findByIdwithLock(userId, undefined)).rejects.toThrow(
+                BadRequestException,
+            );
         });
         it('유저 ID가 음수이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
             // given
             const userId = -1;
 
             // when & then
-            await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
+            await expect(service.findByIdwithLock(userId, undefined)).rejects.toThrow(
+                BadRequestException,
+            );
         });
         it('유저 ID가 문자열이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
             // given
             const userId = 'test' as any;
 
             // when & then
-            await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
+            await expect(service.findByIdwithLock(userId, undefined)).rejects.toThrow(
+                BadRequestException,
+            );
         });
         it('유저 ID가 실수이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
             // given
             const userId = 1.1;
 
             // when & then
-            await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
+            await expect(service.findByIdwithLock(userId, undefined)).rejects.toThrow(
+                BadRequestException,
+            );
         });
         it('유저 ID가 undefined이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
             // given
             const userId = undefined as any;
 
             // when & then
-            await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
+            await expect(service.findByIdwithLock(userId, undefined)).rejects.toThrow(
+                BadRequestException,
+            );
         });
         it('유저 ID가 null이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
             // given
             const userId = null as any;
 
             // when & then
-            await expect(service.findByIdwithLock(userId)).rejects.toThrow(BadRequestException);
+            await expect(service.findByIdwithLock(userId, undefined)).rejects.toThrow(
+                BadRequestException,
+            );
         });
     });
 });

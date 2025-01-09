@@ -12,5 +12,6 @@ import { CommonValidator } from '../common/common-validator';
         { provide: IUSER_REPOSITORY, useClass: UserRepository },
         CommonValidator,
     ],
+    exports: [UserService],
 })
 export class UserModule {}
