@@ -7,6 +7,11 @@ export interface ICouponRepository {
         couponId: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaUserCoupon | null>;
+    findUserCouponByUserIdAndCouponId(
+        userId: number,
+        couponId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUserCoupon | null>;
     findCouponByIdwithLock(
         couponId: number,
         tx: Prisma.TransactionClient,
@@ -17,6 +22,13 @@ export interface ICouponRepository {
         tx: Prisma.TransactionClient,
     ): Promise<PrismaUserCoupon>;
     findCouponListByUserId(userId: number): Promise<PrismaCoupon[]>;
+    createUserCoupon(
+        userId: number,
+        couponId: number,
+        expirationDate: Date,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUserCoupon>;
+    increaseCouponCurrentCount(couponId: number, tx: Prisma.TransactionClient): Promise<void>;
 }
 
 export const ICOUPON_REPOSITORY = Symbol('ICOUPON_REPOSITORY');

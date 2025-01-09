@@ -1,6 +1,8 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Post, Body } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { CouponService } from '../domain/service/coupon.service';
+import { IssueCouponRequestDto } from './dto/issue-coupon.request.dto';
+import { IssueCouponResponseDto } from './dto/issue-coupon.response.dto';
 import { CouponListResponseDto } from './dto/coupon-list.response.dto';
 
 @ApiTags('Coupons')
@@ -36,5 +38,35 @@ export class CouponController {
             discount_amount: coupon.discount_amount,
             code: coupon.code,
         }));
+    }
+
+    @Post('issue')
+    @ApiOperation({
+        summary: '쿠폰 발급',
+        description: '사용자에게 쿠폰을 발급합니다.',
+    })
+    @ApiResponse({
+        status: 201,
+        description: '쿠폰 발급 성공',
+        type: IssueCouponResponseDto,
+    })
+    @ApiResponse({ status: 400, description: '잘못된 요청 (재고 부족, 발급 기간 아님 등)' })
+    @ApiResponse({ status: 404, description: '쿠폰 또는 사용자를 찾을 수 없음' })
+    @ApiResponse({ status: 409, description: '이미 발급받은 쿠폰' })
+    async issueCoupon(
+        @Body() issueCouponDto: IssueCouponRequestDto,
+    ): Promise<IssueCouponResponseDto> {
+        const result = await this.couponService.createUserCoupon(
+            issueCouponDto.user_id,
+            issueCouponDto.coupon_id,
+        );
+
+        return {
+            id: result.id,
+            user_id: result.user_id,
+            coupon_id: result.coupon_id,
+            status: result.status,
+            expiration_date: result.expiration_date,
+        };
     }
 }

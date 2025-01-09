@@ -5,6 +5,7 @@ import { user_coupon as PrismaUserCoupon, coupon as PrismaCoupon } from '@prisma
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CouponStatus } from '../type/couponStatus.enum';
 import { CommonValidator } from '../../../common/common-validator';
+import { PrismaService } from '../../../database/prisma.service';
 
 describe('CouponService', () => {
     let service: CouponService;
@@ -30,7 +31,7 @@ describe('CouponService', () => {
         absolute_expiration_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 일주일 뒤
         issue_start_date: new Date(),
         issue_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 일주일 뒤
-        current_count: 100,
+        current_count: 0,
         max_count: 100,
         created_at: new Date(),
         updated_at: new Date(),
@@ -67,9 +68,20 @@ describe('CouponService', () => {
                         findCouponListByUserId: jest
                             .fn()
                             .mockResolvedValue([mockCoupon, mockCoupon2]),
+                        createUserCoupon: jest.fn().mockResolvedValue(mockUserCoupon),
+                        increaseCouponCurrentCount: jest.fn().mockResolvedValue(mockCoupon),
+                        findUserCouponByUserIdAndCouponId: jest
+                            .fn()
+                            .mockResolvedValue(mockUserCoupon),
                     },
                 },
                 CommonValidator,
+                {
+                    provide: PrismaService,
+                    useValue: {
+                        $transaction: jest.fn((callback) => callback()),
+                    },
+                },
             ],
         }).compile();
 
@@ -290,6 +302,65 @@ describe('CouponService', () => {
                 // when & then
                 await expect(service.findCouponListByUserId(userId)).rejects.toThrow(
                     '사용자 ID 9999의 쿠폰을 찾을 수 없습니다.',
+                );
+            });
+        });
+    });
+
+    describe('createUserCoupon: 사용자 쿠폰 생성 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 사용자 ID와 쿠폰 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
+                // given
+                const userId = 1;
+                const couponId = 1;
+
+                jest.spyOn(repository, 'findUserCouponByUserIdAndCouponId').mockResolvedValueOnce(
+                    null,
+                );
+
+                // when
+                const result = await service.createUserCoupon(userId, couponId);
+
+                // then
+                expect(result).toEqual(mockUserCoupon);
+            });
+        });
+        describe('실패 케이스', () => {
+            it('쿠폰 발급 가능일이 아니면 에러를 발생시킨다', async () => {
+                // given
+                const userId = 1;
+                const couponId = 1;
+                jest.spyOn(repository, 'findUserCouponByUserIdAndCouponId').mockResolvedValueOnce(
+                    null,
+                );
+
+                jest.spyOn(repository, 'findCouponByIdwithLock').mockResolvedValueOnce({
+                    ...mockCoupon,
+                    issue_start_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                    issue_end_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+                });
+
+                // when & then
+                await expect(service.createUserCoupon(userId, couponId)).rejects.toThrow(
+                    '쿠폰 ID 1의 발급 가능일이 아닙니다.',
+                );
+            });
+            it('쿠폰 재고가 없으면 에러를 발생시킨다', async () => {
+                // given
+                const userId = 1;
+                const couponId = 1;
+
+                jest.spyOn(repository, 'findUserCouponByUserIdAndCouponId').mockResolvedValueOnce(
+                    null,
+                );
+                jest.spyOn(repository, 'findCouponByIdwithLock').mockResolvedValueOnce({
+                    ...mockCoupon,
+                    current_count: 100,
+                });
+
+                // when & then
+                await expect(service.createUserCoupon(userId, couponId)).rejects.toThrow(
+                    '쿠폰 ID 1의 재고가 없습니다.',
                 );
             });
         });

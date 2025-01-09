@@ -4,6 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { getClient } from '../../common/util';
 import { NotFoundException } from '@nestjs/common';
+import { CouponStatus } from '../domain/type/couponStatus.enum';
 @Injectable()
 export class CouponRepository implements ICouponRepository {
     constructor(private readonly prisma: PrismaService) {}
@@ -25,6 +26,23 @@ export class CouponRepository implements ICouponRepository {
         }
 
         return coupon[0];
+    }
+
+    async findUserCouponByUserIdAndCouponId(
+        userId: number,
+        couponId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUserCoupon | null> {
+        const client = getClient(this.prisma, tx);
+        const userCoupon = await client.user_coupon.findFirst({
+            where: { user_id: userId, coupon_id: couponId },
+        });
+
+        if (!userCoupon) {
+            return null;
+        }
+
+        return userCoupon;
     }
 
     async findCouponByIdwithLock(
@@ -76,5 +94,40 @@ export class CouponRepository implements ICouponRepository {
         }
 
         return coupon;
+    }
+
+    async createUserCoupon(
+        userId: number,
+        couponId: number,
+        expirationDate: Date,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUserCoupon> {
+        const client = getClient(this.prisma, tx);
+        const userCoupon = await client.user_coupon.create({
+            data: {
+                user_id: userId,
+                coupon_id: couponId,
+                status: CouponStatus.AVAILABLE,
+                issue_date: new Date(),
+                expiration_date: expirationDate,
+            },
+        });
+
+        return userCoupon;
+    }
+
+    async increaseCouponCurrentCount(
+        couponId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<void> {
+        const client = getClient(this.prisma, tx);
+        const coupon = await client.coupon.update({
+            where: { id: couponId },
+            data: { current_count: { increment: 1 } },
+        });
+
+        if (!coupon) {
+            throw new NotFoundException(`ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`);
+        }
     }
 }
