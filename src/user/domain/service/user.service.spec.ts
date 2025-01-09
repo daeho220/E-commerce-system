@@ -26,6 +26,8 @@ describe('UserService', () => {
                     useValue: {
                         findById: jest.fn().mockResolvedValue(mockUser),
                         findByIdwithLock: jest.fn().mockResolvedValue(mockUser),
+                        useUserPoint: jest.fn().mockResolvedValue(mockUser),
+                        chargeUserPoint: jest.fn().mockResolvedValue(mockUser),
                     },
                 },
                 CommonValidator,
@@ -131,6 +133,148 @@ describe('UserService', () => {
 
                 // then
                 expect(result).toBeNull();
+            });
+        });
+    });
+
+    describe('useUserPoint: 유저 포인트 차감 테스트', () => {
+        describe('성공 케이스', () => {
+            it('유저 포인트가 차감되면 유저 정보를 반환한다', async () => {
+                // given
+                const userId = 1;
+                const amount = 1000;
+
+                // when
+
+                jest.spyOn(repository, 'useUserPoint').mockResolvedValueOnce({
+                    ...mockUser,
+                    point: mockUser.point - amount,
+                });
+                // when
+                const result = await service.useUserPoint(userId, amount, undefined);
+
+                // then
+                expect(result).toEqual({
+                    ...mockUser,
+                    point: mockUser.point - amount,
+                });
+            });
+        });
+        describe('실패 케이스', () => {
+            it('올바르지 않은 유저 ID로 포인트 차감시 BadRequestException을 발생시킨다', async () => {
+                // given
+                const userId = 0;
+
+                // when
+                expect(() => commonValidator.validateUserId(userId)).toThrow(BadRequestException);
+            });
+            it('올바르지 않은 포인트로 포인트 차감시 BadRequestException을 발생시킨다', async () => {
+                // given
+                const amount = -1000;
+
+                // when
+                expect(() => commonValidator.validatePoint(amount)).toThrow(BadRequestException);
+            });
+            it('유저 포인트 차감 중 알 수 없는 오류가 발생하면 오류를 던진다', async () => {
+                // given
+                const userId = 1;
+                const amount = 1000;
+
+                // when
+                jest.spyOn(repository, 'useUserPoint').mockRejectedValueOnce(new Error());
+
+                // then
+                await expect(service.useUserPoint(userId, amount, undefined)).rejects.toThrow(
+                    Error,
+                );
+            });
+            it('유저 포인트 차감 중 오류가 발생하면 오류를 던진다', async () => {
+                // given
+                const userId = 1;
+                const amount = 1000;
+
+                // when
+                jest.spyOn(repository, 'useUserPoint').mockRejectedValueOnce(
+                    new Error('유저 포인트 차감 중 오류가 발생했습니다.'),
+                );
+
+                // then
+                await expect(service.useUserPoint(userId, amount, undefined)).rejects.toThrow(
+                    '유저 포인트 차감 중 오류가 발생했습니다.',
+                );
+            });
+        });
+    });
+
+    describe('chargeUserPoint: 유저 포인트 충전 테스트', () => {
+        describe('성공 케이스', () => {
+            it('유저 포인트가 충전되면 유저 정보를 반환한다', async () => {
+                // given
+                const userId = 1;
+                const amount = 1000;
+
+                // when
+                jest.spyOn(repository, 'chargeUserPoint').mockResolvedValueOnce({
+                    ...mockUser,
+                    point: mockUser.point + amount,
+                });
+
+                // then
+                const result = await service.chargeUserPoint(userId, amount, undefined);
+                expect(result).toEqual({
+                    ...mockUser,
+                    point: mockUser.point + amount,
+                });
+            });
+        });
+        describe('실패 케이스', () => {
+            describe('실패 케이스', () => {
+                it('올바르지 않은 유저 ID로 포인트 충전시 BadRequestException을 발생시킨다', async () => {
+                    // given
+                    const userId = 0;
+
+                    // when
+                    expect(() => commonValidator.validateUserId(userId)).toThrow(
+                        BadRequestException,
+                    );
+                });
+                it('올바르지 않은 포인트로 포인트 충전시 BadRequestException을 발생시킨다', async () => {
+                    // given
+                    const amount = -1000;
+
+                    // when
+                    expect(() => commonValidator.validatePoint(amount)).toThrow(
+                        BadRequestException,
+                    );
+                });
+                it('유저 포인트 충전 중 알 수 없는 오류가 발생하면 오류를 던진다', async () => {
+                    // given
+                    const userId = 1;
+                    const amount = 1000;
+
+                    // when
+                    jest.spyOn(repository, 'chargeUserPoint').mockRejectedValueOnce(new Error());
+
+                    // then
+                    await expect(
+                        service.chargeUserPoint(userId, amount, undefined),
+                    ).rejects.toThrow(Error);
+                });
+                it('유저 포인트 충전 중 오류가 발생하면 오류를 던진다', async () => {
+                    // given
+                    const userId = 1;
+                    const amount = 1000;
+
+                    // when
+                    jest.spyOn(repository, 'chargeUserPoint').mockRejectedValueOnce(
+                        new Error('유저 포인트 충전 중 오류가 발생했습니다.'),
+                    );
+
+                    // then
+                    await expect(
+                        service.chargeUserPoint(userId, amount, undefined),
+                    ).rejects.toThrow('유저 포인트 충전 중 오류가 발생했습니다.');
+                });
             });
         });
     });

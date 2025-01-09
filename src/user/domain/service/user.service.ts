@@ -20,4 +20,24 @@ export class UserService {
         this.commonValidator.validateUserId(id);
         return this.userRepository.findByIdwithLock(id, tx);
     }
+
+    async useUserPoint(
+        id: number,
+        amount: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUser> {
+        this.commonValidator.validateUserId(id);
+        this.commonValidator.validatePoint(amount);
+        return this.userRepository.useUserPoint(id, amount, tx);
+    }
+
+    async chargeUserPoint(
+        id: number,
+        amount: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUser> {
+        this.commonValidator.validateUserId(id);
+        this.commonValidator.validatePoint(amount);
+        return this.userRepository.chargeUserPoint(id, amount, tx);
+    }
 }
