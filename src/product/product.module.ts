@@ -13,5 +13,6 @@ import { CommonValidator } from '../common/common-validator';
         { provide: IPRODUCT_REPOSITORY, useClass: ProductRepository },
         CommonValidator,
     ],
+    exports: [ProductService],
 })
 export class ProductModule {}
