@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsPositive } from 'class-validator';
 
-export class ChargePointRequestDto {
+export class ChangePointRequestDto {
     @ApiProperty({
         example: 1,
         description: '유저 ID',

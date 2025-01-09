@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class ChargePointResponseDto {
+export class ChangePointResponseDto {
     @ApiProperty({
         example: 1,
         description: '유저 ID',

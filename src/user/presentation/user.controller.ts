@@ -1,8 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserFacade } from '../application/user.facade';
-import { ChargePointRequestDto } from './dto/charge-point.request.dto';
-import { ChargePointResponseDto } from './dto/charge-point.response.dto';
+import { ChangePointRequestDto } from './dto/change-point.request.dto';
+import { ChangePointResponseDto } from './dto/change-point.response.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -17,15 +17,15 @@ export class UserController {
     @ApiResponse({
         status: 200,
         description: '포인트 충전 성공',
-        type: ChargePointResponseDto,
+        type: ChangePointResponseDto,
     })
     @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
     async chargePoint(
-        @Body() chargePointDto: ChargePointRequestDto,
-    ): Promise<ChargePointResponseDto> {
+        @Body() changePointDto: ChangePointRequestDto,
+    ): Promise<ChangePointResponseDto> {
         const result = await this.userFacade.chargeUserPoint(
-            chargePointDto.userId,
-            chargePointDto.amount,
+            changePointDto.userId,
+            changePointDto.amount,
         );
 
         return {
