@@ -16,6 +16,7 @@ export interface ICouponRepository {
         status: string,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaUserCoupon>;
+    findCouponListByUserId(userId: number): Promise<PrismaCoupon[]>;
 }
 
 export const ICOUPON_REPOSITORY = Symbol('ICOUPON_REPOSITORY');

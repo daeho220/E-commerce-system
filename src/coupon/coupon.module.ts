@@ -5,9 +5,10 @@ import { CouponRepository } from './infrastructure/coupon.repository.mysql.impl'
 import { ICOUPON_REPOSITORY } from './domain/coupon.repository.interface';
 import { PrismaModule } from '../database/prisma.module';
 import { CommonValidator } from '../common/common-validator';
+import { CouponController } from './presentation/coupon.controller';
 @Module({
     imports: [PrismaModule],
-    controllers: [CouponMockController],
+    controllers: [CouponController],
     providers: [
         CouponService,
         { provide: ICOUPON_REPOSITORY, useClass: CouponRepository },

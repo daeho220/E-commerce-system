@@ -156,4 +156,31 @@ describe('CouponService (Integration)', () => {
             });
         });
     });
+
+    describe('findCouponByUserId: 사용자 쿠폰 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 사용자 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
+                // given
+                const userId = 1;
+
+                // when
+                const result = await service.findCouponListByUserId(userId);
+                // then
+                expect(result).toBeDefined();
+                expect(result.length).toBe(2);
+            });
+        });
+
+        describe('실패 케이스', () => {
+            it('존재하지 않는 사용자 ID가 주어지면 NotFoundException을 발생시킨다', async () => {
+                // given
+                const userId = 9999;
+
+                // when & then
+                await expect(service.findCouponListByUserId(userId)).rejects.toThrow(
+                    '사용자 ID 9999의 쿠폰을 찾을 수 없습니다.',
+                );
+            });
+        });
+    });
 });

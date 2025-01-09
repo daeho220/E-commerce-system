@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CouponService } from './coupon.service';
 import { ICouponRepository, ICOUPON_REPOSITORY } from '../coupon.repository.interface';
 import { user_coupon as PrismaUserCoupon, coupon as PrismaCoupon } from '@prisma/client';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CouponStatus } from '../type/couponStatus.enum';
 import { CommonValidator } from '../../../common/common-validator';
 
@@ -36,6 +36,22 @@ describe('CouponService', () => {
         updated_at: new Date(),
     };
 
+    const mockCoupon2: PrismaCoupon = {
+        id: 2,
+        code: '123457',
+        discount_amount: 10,
+        discount_type: 'PERCENT',
+        expiration_type: 'ABSOLUTE',
+        expiration_days: null,
+        absolute_expiration_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 일주일 뒤
+        issue_start_date: new Date(),
+        issue_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 일주일 뒤
+        current_count: 100,
+        max_count: 100,
+        created_at: new Date(),
+        updated_at: new Date(),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -48,6 +64,9 @@ describe('CouponService', () => {
                             .mockResolvedValue(mockUserCoupon),
                         findCouponByIdwithLock: jest.fn().mockResolvedValue(mockCoupon),
                         updateUserCouponStatus: jest.fn().mockResolvedValue(mockUserCoupon),
+                        findCouponListByUserId: jest
+                            .fn()
+                            .mockResolvedValue([mockCoupon, mockCoupon2]),
                     },
                 },
                 CommonValidator,
@@ -242,6 +261,35 @@ describe('CouponService', () => {
                 // when & then
                 expect(() => commonValidator.validateCouponStatus(status)).toThrow(
                     BadRequestException,
+                );
+            });
+        });
+    });
+
+    describe('findCouponByUserId: 사용자 쿠폰 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 사용자 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
+                // given
+                const userId = 1;
+
+                // when
+                const result = await service.findCouponListByUserId(userId);
+
+                // then
+                expect(result).toEqual([mockCoupon, mockCoupon2]);
+            });
+        });
+        describe('실패 케이스', () => {
+            it('해당 사용자가 쿠폰을 가지고 있지 않으면 NotFoundException을 발생시킨다', async () => {
+                // given
+                const userId = 9999;
+
+                jest.spyOn(repository, 'findCouponListByUserId').mockRejectedValueOnce(
+                    new NotFoundException('사용자 ID 9999의 쿠폰을 찾을 수 없습니다.'),
+                );
+                // when & then
+                await expect(service.findCouponListByUserId(userId)).rejects.toThrow(
+                    '사용자 ID 9999의 쿠폰을 찾을 수 없습니다.',
                 );
             });
         });

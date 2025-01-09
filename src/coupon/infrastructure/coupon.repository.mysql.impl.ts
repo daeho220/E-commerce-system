@@ -58,4 +58,23 @@ export class CouponRepository implements ICouponRepository {
             throw new Error(`[사용자 쿠폰 상태 업데이트 오류]: ${error}`);
         }
     }
+
+    async findCouponListByUserId(userId: number): Promise<PrismaCoupon[]> {
+        const client = getClient(this.prisma);
+        const coupon = await client.coupon.findMany({
+            where: {
+                user_coupon: {
+                    some: {
+                        user_id: userId,
+                    },
+                },
+            },
+        });
+
+        if (coupon.length === 0) {
+            throw new NotFoundException(`사용자 ID ${userId}의 쿠폰을 찾을 수 없습니다.`);
+        }
+
+        return coupon;
+    }
 }

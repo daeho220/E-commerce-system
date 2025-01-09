@@ -84,4 +84,10 @@ export class CouponService {
             totalPrice,
         };
     }
+
+    // 사용자 쿠폰 목록 조회
+    async findCouponListByUserId(userId: number): Promise<PrismaCoupon[]> {
+        this.commonValidator.validateUserId(userId);
+        return this.couponRepository.findCouponListByUserId(userId);
+    }
 }
