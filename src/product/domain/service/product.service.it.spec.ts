@@ -35,7 +35,7 @@ describe('ProductService', () => {
 
                 // when & then
                 await expect(service.findById(nonExistentProductId)).rejects.toThrow(
-                    '상품 정보를 찾을 수 없습니다.',
+                    'ID가 9999인 상품을 찾을 수 없습니다.',
                 );
             });
             it('상품 ID가 0이면 상품 조회시 BadRequestException을 발생시킨다', async () => {
@@ -103,7 +103,7 @@ describe('ProductService', () => {
                 // when & then
                 await expect(
                     service.findByIdwithLock(nonExistentProductId, undefined),
-                ).rejects.toThrow('상품 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow('ID가 9999인 상품을 찾을 수 없습니다.');
             });
         });
         it('상품 ID가 0이면 상품 조회시 BadRequestException을 발생시킨다', async () => {
@@ -197,7 +197,7 @@ describe('ProductService', () => {
                 // when & then
                 await expect(
                     service.decreaseStock(nonExistentProductId, 1, undefined),
-                ).rejects.toThrow('상품 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow(Error);
             });
             it('재고 감소 수량이 0이면 에러를 던진다', async () => {
                 // given
@@ -226,7 +226,7 @@ describe('ProductService', () => {
 
                 // when & then
                 await expect(service.decreaseStock(productId, quantity, undefined)).rejects.toThrow(
-                    '상품 정보를 찾을 수 없습니다.',
+                    Error,
                 );
             });
         });

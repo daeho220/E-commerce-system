@@ -2,8 +2,8 @@ import { IProductRepository } from '../domain/product.repository.interface';
 import { product as PrismaProduct, Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { getClient } from '../../common/util';
+import { NotFoundException } from '@nestjs/common';
 @Injectable()
 export class ProductRepository implements IProductRepository {
     constructor(private readonly prisma: PrismaService) {}
@@ -15,7 +15,7 @@ export class ProductRepository implements IProductRepository {
         });
 
         if (!product) {
-            throw new Error('상품 정보를 찾을 수 없습니다.');
+            throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
         }
 
         return product;
@@ -31,7 +31,7 @@ export class ProductRepository implements IProductRepository {
         `;
 
         if (product.length === 0) {
-            throw new Error('상품 정보를 찾을 수 없습니다.');
+            throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
         }
 
         return product[0];
@@ -42,36 +42,29 @@ export class ProductRepository implements IProductRepository {
         quantity: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaProduct> {
-        try {
-            const client = getClient(this.prisma, tx);
-            const result = await client.product.update({
-                where: {
-                    id,
-                    stock: {
-                        gte: quantity,
-                    },
+        const client = getClient(this.prisma, tx);
+        const result = await client.product.update({
+            where: {
+                id,
+                stock: {
+                    gte: quantity,
                 },
-                data: { stock: { decrement: quantity } },
-            });
+            },
+            data: { stock: { decrement: quantity } },
+        });
 
-            if (!result) {
-                throw new Error('상품 정보를 찾을 수 없습니다.');
-            }
-
-            // 재고가 0이 되면, 상품 상태 변경
-            if (result.stock === 0) {
-                await client.product.update({
-                    where: { id },
-                    data: { status: false },
-                });
-            }
-
-            return result;
-        } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-                throw new Error('상품 정보를 찾을 수 없습니다.');
-            }
-            throw error;
+        if (!result) {
+            throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
         }
+
+        // 재고가 0이 되면, 상품 상태 변경
+        if (result.stock === 0) {
+            await client.product.update({
+                where: { id },
+                data: { status: false },
+            });
+        }
+
+        return result;
     }
 }
