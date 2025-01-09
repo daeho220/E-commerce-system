@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { IOrderRepository } from '../domain/order.repository.interface';
 import { order as PrismaOrder, order_detail as PrismaOrderDetail, Prisma } from '@prisma/client';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { getClient } from '../../common/util';
-
+import { OrderStatus } from '../domain/type/order-status.enum';
+import { NotFoundException } from '@nestjs/common';
 @Injectable()
 export class OrderRepository implements IOrderRepository {
     constructor(private readonly prisma: PrismaService) {}
@@ -19,16 +19,12 @@ export class OrderRepository implements IOrderRepository {
                 data: order,
             });
         } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-                throw new Error('주문 생성 중 오류가 발생했습니다. 유효한 데이터를 확인하세요.');
-            }
-
-            throw new Error('주문 생성 중 알 수 없는 오류가 발생했습니다.');
+            throw new Error(`[주문 생성 오류]: ${error}`);
         }
     }
 
     async createOrderDetail(
-        orderDetail: Omit<PrismaOrderDetail, 'id'>,
+        orderDetail: Omit<PrismaOrderDetail, 'id' | 'created_at'>,
         tx?: Prisma.TransactionClient,
     ): Promise<PrismaOrderDetail> {
         try {
@@ -37,13 +33,60 @@ export class OrderRepository implements IOrderRepository {
                 data: orderDetail,
             });
         } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-                throw new Error(
-                    '주문 상세 생성 중 오류가 발생했습니다. 유효한 데이터를 확인하세요.',
-                );
-            }
-
-            throw new Error('주문 디테일 생성 중 알 수 없는 오류가 발생했습니다.');
+            throw new Error(`[주문 상세 생성 오류]: ${error}`);
         }
+    }
+
+    async updateOrderStatus(
+        orderId: number,
+        status: OrderStatus,
+        tx?: Prisma.TransactionClient,
+    ): Promise<PrismaOrder> {
+        try {
+            const client = getClient(this.prisma, tx);
+            return await client.order.update({
+                where: { id: orderId },
+                data: { status },
+            });
+        } catch (error) {
+            throw new Error(`[주문 상태 업데이트 오류]: ${error}`);
+        }
+    }
+
+    async findByIdwithLock(
+        orderId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaOrder | null> {
+        const client = getClient(this.prisma, tx);
+
+        const result = await client.$queryRaw<
+            PrismaOrder[]
+        >`SELECT * FROM \`order\` WHERE id = ${orderId} FOR UPDATE`;
+
+        if (result.length === 0) {
+            throw new NotFoundException(`ID가 ${orderId}인 주문을 찾을 수 없습니다.`);
+        }
+
+        return result[0];
+    }
+
+    async findByUserIdandOrderIdwithLock(
+        userId: number,
+        orderId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaOrder> {
+        const client = getClient(this.prisma, tx);
+
+        const result = await client.$queryRaw<
+            PrismaOrder[]
+        >`SELECT * FROM \`order\` WHERE id = ${orderId} AND user_id = ${userId} FOR UPDATE`;
+
+        if (result.length === 0) {
+            throw new NotFoundException(
+                `주문 ID ${orderId}, 사용자 ID ${userId} 주문을 찾을 수 없습니다.`,
+            );
+        }
+
+        return result[0];
     }
 }

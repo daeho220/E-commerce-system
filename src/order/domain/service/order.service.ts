@@ -3,12 +3,15 @@ import { order as PrismaOrder, order_detail as PrismaOrderDetail, Prisma } from 
 import { Injectable, Inject } from '@nestjs/common';
 import { OrderValidator } from '../../util/order-validator';
 import { OrderDetailValidator } from '../../util/orderDetail-validator';
-
+import { OrderStatus } from '../type/order-status.enum';
+import { CommonValidator } from '../../../common/common-validator';
+import { OrderStatusValidator } from '../../util/order-status-validator';
 @Injectable()
 export class OrderService {
     constructor(
         @Inject(IORDER_REPOSITORY)
         private readonly orderRepository: IOrderRepository,
+        private readonly commonValidator: CommonValidator,
     ) {}
 
     async createOrder(
@@ -25,7 +28,7 @@ export class OrderService {
     }
 
     async createOrderDetail(
-        orderDetail: Omit<PrismaOrderDetail, 'id'>,
+        orderDetail: Omit<PrismaOrderDetail, 'id' | 'created_at'>,
         tx?: Prisma.TransactionClient,
     ): Promise<PrismaOrderDetail> {
         const validation = OrderDetailValidator.validate(orderDetail);
@@ -35,5 +38,33 @@ export class OrderService {
         }
 
         return await this.orderRepository.createOrderDetail(orderDetail, tx);
+    }
+
+    async findByIdwithLock(
+        orderId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaOrder | null> {
+        this.commonValidator.validateOrderId(orderId);
+        return await this.orderRepository.findByIdwithLock(orderId, tx);
+    }
+
+    async updateOrderStatus(
+        orderId: number,
+        status: OrderStatus,
+        tx?: Prisma.TransactionClient,
+    ): Promise<PrismaOrder> {
+        this.commonValidator.validateOrderId(orderId);
+        OrderStatusValidator.validate(status);
+        return await this.orderRepository.updateOrderStatus(orderId, status, tx);
+    }
+
+    async findByUserIdandOrderIdwithLock(
+        userId: number,
+        orderId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaOrder> {
+        this.commonValidator.validateUserId(userId);
+        this.commonValidator.validateOrderId(orderId);
+        return await this.orderRepository.findByUserIdandOrderIdwithLock(userId, orderId, tx);
     }
 }

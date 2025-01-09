@@ -9,6 +9,8 @@ import { CartModule } from './cart/cart.module';
 import { PrismaModule } from './database/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { AppConfigService } from './configs/configs.service';
+import { UserModule } from './user/user.module';
+import { HistoryModule } from './history/history.module';
 
 const serviceModules = [
     ProductModule,
@@ -17,6 +19,8 @@ const serviceModules = [
     PointModule,
     CouponModule,
     CartModule,
+    UserModule,
+    HistoryModule,
 ];
 
 @Module({

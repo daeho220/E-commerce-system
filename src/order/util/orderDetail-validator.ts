@@ -1,7 +1,7 @@
 import { order_detail as PrismaOrderDetail } from '@prisma/client';
 
 export class OrderDetailValidator {
-    static validate(orderDetail: Omit<PrismaOrderDetail, 'id'>) {
+    static validate(orderDetail: Omit<PrismaOrderDetail, 'id' | 'created_at'>) {
         const errors: string[] = [];
 
         if (!this.isPositiveNumber(orderDetail.order_id)) {
