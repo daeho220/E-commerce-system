@@ -9,103 +9,144 @@ datasource db {
 }
 
 model cart_items {
-  id         Int       @id
-  user_id    Int?
-  product_id Int?
-  quantity   Int?
-  created_at DateTime? @db.DateTime(0)
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  quantity   Int
+  created_at DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
   updated_at DateTime? @db.DateTime(0)
+  user       user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cart_items_ibfk_1")
+  product    product   @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "cart_items_ibfk_2")
+
+  @@index([product_id], map: "product_id")
+  @@index([user_id], map: "user_id")
 }
 
 model coupon {
-  id                       Int       @id
-  code                     String?   @db.VarChar(255)
-  discount_amount          Int?
-  discount_type            String?   @db.VarChar(255)
-  expiration_type          String?   @db.VarChar(255)
+  id                       Int           @id @default(autoincrement())
+  code                     String        @db.VarChar(255)
+  discount_amount          Int
+  discount_type            String        @db.VarChar(255)
+  expiration_type          String        @db.VarChar(255)
   expiration_days          Int?
-  absolute_expiration_date DateTime? @db.DateTime(0)
-  issue_start_date         DateTime? @db.DateTime(0)
-  issue_end_date           DateTime? @db.DateTime(0)
-  current_count            Int?
-  max_count                Int?
-  created_at               DateTime? @db.DateTime(0)
-  updated_at               DateTime? @db.DateTime(0)
+  absolute_expiration_date DateTime?     @db.DateTime(0)
+  issue_start_date         DateTime      @db.DateTime(0)
+  issue_end_date           DateTime      @db.DateTime(0)
+  current_count            Int           @default(0)
+  max_count                Int
+  created_at               DateTime      @default(dbgenerated("(now())")) @db.DateTime(0)
+  updated_at               DateTime?     @db.DateTime(0)
+  user_coupon              user_coupon[]
 }
 
 model order {
-  id             Int       @id
-  user_id        Int?
+  id             Int            @id @default(autoincrement())
+  user_id        Int
   user_coupon_id Int?
-  original_price Int?
-  discount_price Int?
-  total_price    Int?
-  status         String?   @db.VarChar(255)
-  created_at     DateTime? @db.DateTime(0)
+  original_price Int
+  discount_price Int            @default(0)
+  total_price    Int
+  status         String         @default("PENDING") @db.VarChar(255)
+  created_at     DateTime       @default(dbgenerated("(now())")) @db.DateTime(0)
+  user           user           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_ibfk_1")
+  user_coupon    user_coupon?   @relation(fields: [user_coupon_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_ibfk_2")
+  order_detail   order_detail[]
+  payment        payment[]
+
+  @@index([user_coupon_id], map: "user_coupon_id")
+  @@index([user_id], map: "user_id")
 }
 
 model order_detail {
-  id                Int  @id
-  order_id          Int?
-  product_id        Int?
-  quantity          Int?
-  price_at_purchase Int?
+  id                Int     @id @default(autoincrement())
+  order_id          Int
+  product_id        Int
+  quantity          Int
+  price_at_purchase Int
+  order             order   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_detail_ibfk_1")
+  product           product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_detail_ibfk_2")
+
+  @@index([order_id], map: "order_id")
+  @@index([product_id], map: "product_id")
 }
 
 model payment {
-  id             Int       @id
-  order_id       Int?
-  user_id        Int?
-  payment_method String?   @db.VarChar(255)
-  status         String?   @db.VarChar(255)
-  created_at     DateTime? @db.DateTime(0)
+  id             Int      @id @default(autoincrement())
+  order_id       Int
+  user_id        Int
+  payment_method String   @db.VarChar(255)
+  status         String   @default("PENDING") @db.VarChar(255)
+  created_at     DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  order          order    @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "payment_ibfk_1")
+  user           user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "payment_ibfk_2")
+
+  @@index([order_id], map: "order_id")
+  @@index([user_id], map: "user_id")
 }
 
 model point_history {
-  id          Int       @id
-  user_id     Int?
-  amount      Int?
-  change_type String?   @db.VarChar(255)
-  created_at  DateTime? @db.DateTime(0)
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  amount      Int
+  change_type String   @db.VarChar(255)
+  created_at  DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  user        user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "point_history_ibfk_1")
+
+  @@index([user_id], map: "user_id")
 }
 
 model product_sales_stat {
-  id             Int       @id
+  id             Int       @id @default(autoincrement())
   product_id     Int?
-  date           DateTime? @db.Date
-  order_count    Int?
-  sales_quantity Int?
-  sales_amount   Int?
-  created_at     DateTime? @db.DateTime(0)
+  date           DateTime? @default(dbgenerated("(curdate())")) @db.Date
+  order_count    Int       @default(0)
+  sales_quantity Int       @default(0)
+  sales_amount   Int       @default(0)
+  created_at     DateTime  @default(dbgenerated("(now())")) @db.DateTime(0)
   updated_at     DateTime? @db.DateTime(0)
+  product        product?  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_sales_stat_ibfk_1")
 
   @@unique([product_id, date], map: "product_sales_stat_index_0")
   @@index([date], map: "product_sales_stat_index_1")
 }
 
 model user {
-  id         Int       @id
-  user_name  String?   @db.VarChar(255)
-  point      Int?
-  created_at DateTime? @db.DateTime(0)
-  updated_at DateTime? @db.DateTime(0)
+  id            Int             @id @default(autoincrement())
+  user_name     String          @db.VarChar(255)
+  point         Int             @default(0)
+  created_at    DateTime        @default(dbgenerated("(now())")) @db.DateTime(0)
+  updated_at    DateTime?       @db.DateTime(0)
+  cart_items    cart_items[]
+  order         order[]
+  payment       payment[]
+  point_history point_history[]
+  user_coupon   user_coupon[]
 }
 
 model user_coupon {
-  id              Int       @id
-  user_id         Int?
-  coupon_id       Int?
-  issue_date      DateTime? @db.DateTime(0)
-  expiration_date DateTime? @db.DateTime(0)
-  status          String?   @db.VarChar(255)
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  coupon_id       Int
+  issue_date      DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  expiration_date DateTime @db.DateTime(0)
+  status          String   @default("AVAILABLE") @db.VarChar(255)
+  order           order[]
+  user            user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_coupon_ibfk_1")
+  coupon          coupon   @relation(fields: [coupon_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_coupon_ibfk_2")
+
+  @@index([coupon_id], map: "coupon_id")
+  @@index([user_id], map: "user_id")
 }
 
 model product {
-  id           Int       @id
-  product_name String?   @db.VarChar(255)
-  price        Int?
-  status       Boolean?
-  stock        Int?
-  created_at   DateTime? @db.DateTime(0)
-  updated_at   DateTime? @db.DateTime(0)
+  id                 Int                  @id @default(autoincrement())
+  product_name       String               @db.VarChar(255)
+  price              Int
+  status             Boolean              @default(true)
+  stock              Int
+  created_at         DateTime             @default(dbgenerated("(now())")) @db.DateTime(0)
+  updated_at         DateTime?            @db.DateTime(0)
+  cart_items         cart_items[]
+  order_detail       order_detail[]
+  product_sales_stat product_sales_stat[]
 }
