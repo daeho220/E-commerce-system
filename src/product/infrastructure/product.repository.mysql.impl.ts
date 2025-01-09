@@ -67,4 +67,44 @@ export class ProductRepository implements IProductRepository {
 
         return result;
     }
+
+    async findProducts(
+        skip: number,
+        limit: number,
+    ): Promise<{
+        products: PrismaProduct[];
+        total: number;
+    }> {
+        const client = getClient(this.prisma);
+
+        // 상품 목록 조회 (재고 정보의 정확성을 위해 FOR UPDATE 사용)
+        const products = await client.$queryRaw<PrismaProduct[]>`
+            SELECT 
+                id,
+                product_name,
+                price,
+                stock,
+                status,
+                created_at,
+                updated_at
+            FROM product
+            WHERE status = true
+            ORDER BY id DESC
+            LIMIT ${limit} OFFSET ${skip}`;
+
+        if (products.length === 0) {
+            throw new NotFoundException('상품이 존재하지 않습니다.');
+        }
+
+        // 전체 상품 수 조회
+        const [{ total }] = await client.$queryRaw<[{ total: number }]>`
+            SELECT COUNT(*) as total
+            FROM product
+            WHERE status = true`;
+
+        return {
+            products,
+            total,
+        };
+    }
 }

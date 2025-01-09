@@ -63,4 +63,16 @@ export class CommonValidator {
             throw new BadRequestException('유효하지 않은 수량입니다.');
         }
     }
+
+    validatePage(page: number): void {
+        if (!Number.isInteger(page) || page <= 0) {
+            throw new BadRequestException('유효하지 않은 페이지입니다.');
+        }
+    }
+
+    validateLimit(limit: number): void {
+        if (!Number.isInteger(limit) || limit <= 0) {
+            throw new BadRequestException('유효하지 않은 페이지 크기입니다.');
+        }
+    }
 }

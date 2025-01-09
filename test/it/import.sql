@@ -41,7 +41,16 @@ INSERT INTO `product` (`id`, `product_name`, `price`, `status`, `stock`, `create
 (8, 'Product H', 8000, FALSE, 120, NOW(), NOW()),
 (9, 'Product I', 9000, TRUE, 100, NOW(), NOW()),
 (10, 'Product J', 10000, TRUE, 100, NOW(), NOW()),
-(11, 'Product K', 11000, TRUE, 100, NOW(), NOW());
+(11, 'Product K', 11000, TRUE, 100, NOW(), NOW()),
+(12, 'Product L', 12000, TRUE, 100, NOW(), NOW()),
+(13, 'Product M', 13000, TRUE, 100, NOW(), NOW()),
+(14, 'Product N', 14000, TRUE, 100, NOW(), NOW()),
+(15, 'Product O', 15000, TRUE, 100, NOW(), NOW()),
+(16, 'Product P', 16000, TRUE, 100, NOW(), NOW()),
+(17, 'Product Q', 17000, TRUE, 100, NOW(), NOW()),
+(18, 'Product R', 18000, TRUE, 100, NOW(), NOW()),
+(19, 'Product S', 19000, TRUE, 100, NOW(), NOW()),
+(20, 'Product T', 20000, TRUE, 100, NOW(), NOW());
 
 -- ProductSalesStat 테이블 샘플 데이터
 INSERT INTO `product_sales_stat` (`id`, `product_id`, `date`, `order_count`, `sales_quantity`, `sales_amount`, `created_at`, `updated_at`) VALUES

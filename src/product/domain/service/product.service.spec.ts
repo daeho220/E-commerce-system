@@ -18,6 +18,21 @@ describe('ProductService', () => {
         stock: 100,
     };
 
+    const mockProducts = {
+        products: [
+            {
+                id: 1,
+                product_name: 'Test Product',
+                price: 1000,
+                stock: 100,
+            },
+        ],
+        total: 1,
+        current_page: 1,
+        limit: 10,
+        total_pages: 1,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -28,6 +43,7 @@ describe('ProductService', () => {
                         findById: jest.fn().mockResolvedValue(mockProduct),
                         findByIdwithLock: jest.fn().mockResolvedValue(mockProduct),
                         decreaseStock: jest.fn().mockResolvedValue(mockProduct),
+                        findProducts: jest.fn().mockResolvedValue(mockProducts),
                     },
                 },
                 CommonValidator,
@@ -185,6 +201,38 @@ describe('ProductService', () => {
                 expect(() => commonValidator.validateProductQuantity(quantity)).toThrow(
                     BadRequestException,
                 );
+            });
+        });
+    });
+
+    describe('findProducts: 상품 목록 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('상품 목록을 조회하고 페이지 정보를 반환한다', async () => {
+                // given
+                const page = 1;
+                const limit = 10;
+
+                // when
+                const result = await service.findProducts(page, limit);
+
+                // then
+                expect(result).toEqual(mockProducts);
+            });
+        });
+        describe('실패 케이스', () => {
+            it('페이지 번호가 0 이하인 경우 에러를 반환한다', async () => {
+                // given
+                const page = 0;
+
+                // when & then
+                expect(() => commonValidator.validatePage(page)).toThrow(BadRequestException);
+            });
+            it('페이지당 항목 수(limit)가 0 이하인 경우 에러를 반환한다', async () => {
+                // given
+                const limit = 0;
+
+                // when & then
+                expect(() => commonValidator.validateLimit(limit)).toThrow(BadRequestException);
             });
         });
     });

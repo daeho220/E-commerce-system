@@ -11,6 +11,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
                     url: `${configService.get<string>('DATABASE_URL')}`,
                 },
             },
+            transactionOptions: {
+                timeout: 10000, // 10초
+            },
         });
     }
 

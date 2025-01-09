@@ -8,6 +8,13 @@ export interface IProductRepository {
         quantity: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaProduct>;
+    findProducts(
+        skip: number,
+        limit: number,
+    ): Promise<{
+        products: PrismaProduct[];
+        total: number;
+    }>;
 }
 
 export const IPRODUCT_REPOSITORY = Symbol('IPRODUCT_REPOSITORY');

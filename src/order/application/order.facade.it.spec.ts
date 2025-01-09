@@ -290,8 +290,8 @@ describe('OrderFacade', () => {
             createOrderDto.user_id = 4;
             createOrderDto.coupon_id = 4;
             createOrderDto.order_items = [
-                { product_id: 11, quantity: 1 },
-                { product_id: 12, quantity: 1 },
+                { product_id: 999, quantity: 1 },
+                { product_id: 998, quantity: 1 },
             ];
 
             const promises = Array(5)
