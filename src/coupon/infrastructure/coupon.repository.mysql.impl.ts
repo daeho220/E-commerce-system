@@ -2,8 +2,8 @@ import { ICouponRepository } from '../domain/coupon.repository.interface';
 import { coupon as PrismaCoupon, user_coupon as PrismaUserCoupon, Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { getClient } from '../../common/util';
+import { NotFoundException } from '@nestjs/common';
 @Injectable()
 export class CouponRepository implements ICouponRepository {
     constructor(private readonly prisma: PrismaService) {}
@@ -19,7 +19,9 @@ export class CouponRepository implements ICouponRepository {
         `;
 
         if (coupon.length === 0) {
-            throw new Error('사용자 쿠폰 정보를 찾을 수 없습니다.');
+            throw new NotFoundException(
+                `ID가 ${userId}인 사용자와 ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`,
+            );
         }
 
         return coupon[0];
@@ -35,7 +37,7 @@ export class CouponRepository implements ICouponRepository {
         `;
 
         if (coupon.length === 0) {
-            throw new Error('쿠폰 정보를 찾을 수 없습니다.');
+            throw new NotFoundException(`ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`);
         }
 
         return coupon[0];
@@ -53,10 +55,7 @@ export class CouponRepository implements ICouponRepository {
                 data: { status },
             });
         } catch (error) {
-            if (error instanceof PrismaClientKnownRequestError) {
-                throw new Error('업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.');
-            }
-            throw error;
+            throw new Error(`[사용자 쿠폰 상태 업데이트 오류]: ${error}`);
         }
     }
 }

@@ -47,7 +47,7 @@ describe('CouponService (Integration)', () => {
                 // when & then
                 await expect(
                     service.findUserCouponByUserIdAndCouponIdwithLock(userId, couponId, undefined),
-                ).rejects.toThrow('사용자 쿠폰 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow('ID가 1인 사용자와 ID가 9999인 쿠폰을 찾을 수 없습니다.');
             });
 
             it('유효하지 않은 사용자 ID가 주어지면 BadRequestException을 발생시킨다', async () => {
@@ -96,7 +96,7 @@ describe('CouponService (Integration)', () => {
 
                 // when & then
                 await expect(service.findCouponByIdwithLock(couponId, undefined)).rejects.toThrow(
-                    '쿠폰 정보를 찾을 수 없습니다.',
+                    'ID가 9999인 쿠폰을 찾을 수 없습니다.',
                 );
             });
 
@@ -141,7 +141,7 @@ describe('CouponService (Integration)', () => {
                 // when & then
                 await expect(
                     service.updateUserCouponStatus(userCouponId, status, undefined),
-                ).rejects.toThrow('업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow(Error);
             });
 
             it('유효하지 않은 쿠폰 상태가 주어지면 BadRequestException을 발생시킨다', async () => {
