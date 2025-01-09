@@ -26,7 +26,7 @@ export class FacadeCreateOrderDto {
 
     @IsInt()
     @IsOptional()
-    coupon_id: number | null;
+    coupon_id?: number;
 
     @IsArray()
     @ArrayNotEmpty({ message: '주문 상품 목록이 비어있습니다.' })

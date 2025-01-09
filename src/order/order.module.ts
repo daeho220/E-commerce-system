@@ -8,15 +8,19 @@ import { PrismaModule } from '../database/prisma.module';
 import { UserModule } from '../user/user.module';
 import { ProductModule } from '../product/product.module';
 import { CouponModule } from '../coupon/coupon.module';
+import { CommonValidator } from '../common/common-validator';
+import { OrderController } from './presentation/order.controller';
 
 const modules = [UserModule, ProductModule, CouponModule];
 @Module({
     imports: [PrismaModule, ...modules],
-    controllers: [OrdersMockController],
+    controllers: [OrderController],
     providers: [
+        CommonValidator,
         OrderService,
         OrderFacade,
         { provide: IORDER_REPOSITORY, useClass: OrderRepository },
     ],
+    exports: [OrderService, OrderFacade],
 })
 export class OrderModule {}

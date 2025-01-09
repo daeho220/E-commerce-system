@@ -3,7 +3,6 @@ import { OrderModule } from '../order.module';
 import { PrismaModule } from '../../database/prisma.module';
 import { OrderFacade } from './order.facade';
 import { FacadeCreateOrderDto } from './dto/facade-create-order.dto';
-import { order as PrismaOrder } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 
 describe('OrderFacade', () => {
@@ -88,7 +87,7 @@ describe('OrderFacade', () => {
 
                 // when & then
                 await expect(service.createOrder(createOrderDto)).rejects.toThrow(
-                    '사용자 쿠폰 정보를 찾을 수 없습니다.',
+                    'ID가 2인 사용자와 ID가 100인 쿠폰을 찾을 수 없습니다.',
                 );
             });
             it('유저 쿠폰 상태가 AVAILABLE가 아닌 경우 에러를 던진다', async () => {
@@ -139,7 +138,7 @@ describe('OrderFacade', () => {
 
                 // when & then
                 await expect(service.createOrder(createOrderDto)).rejects.toThrow(
-                    '사용자 쿠폰 정보를 찾을 수 없습니다.',
+                    'ID가 1인 사용자와 ID가 2인 쿠폰을 찾을 수 없습니다.',
                 );
             });
             it('유저가 존재하지 않는 경우 에러를 던진다', async () => {
@@ -151,7 +150,7 @@ describe('OrderFacade', () => {
 
                 // when & then
                 await expect(service.createOrder(createOrderDto)).rejects.toThrow(
-                    '주문 처리 중 에러 발생: Error: 유저 정보를 찾을 수 없습니다.',
+                    '유저 정보를 찾을 수 없습니다.',
                 );
             });
             it('주문 아이템이 존재하지 않는 경우 에러를 던진다', async () => {
@@ -180,7 +179,7 @@ describe('OrderFacade', () => {
 
                 // when & then
                 await expect(service.createOrder(createOrderDto)).rejects.toThrow(
-                    '주문 처리 중 에러 발생: Error: 상품 정보를 찾을 수 없습니다.',
+                    'ID가 100인 상품을 찾을 수 없습니다.',
                 );
             });
         });
@@ -230,7 +229,7 @@ describe('OrderFacade', () => {
                 // when & then
                 await expect(
                     service.calculateOrderPrice(userId, couponId, originalPrice, undefined),
-                ).rejects.toThrow('사용자 쿠폰 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow('ID가 2인 사용자와 ID가 100인 쿠폰을 찾을 수 없습니다.');
             });
         });
     });
@@ -271,9 +270,7 @@ describe('OrderFacade', () => {
                 (result) => result.status === 'rejected',
             ) as PromiseRejectedResult[];
             failedResults.forEach((result) => {
-                expect(result.reason.message).toBe(
-                    '주문 처리 중 에러 발생: Error: 사용할 수 없는 쿠폰입니다.',
-                );
+                expect(result.reason.message).toBe('사용할 수 없는 쿠폰입니다.');
             });
 
             // 상품 재고 확인 : 1개의 주문만 성공했기에 재고는 1개 줄어들어야한다.

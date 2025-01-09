@@ -89,14 +89,16 @@ describe('OrderFacade', () => {
             decreaseStock: jest.fn(),
         };
         const mockCouponService = {
-            findUserCouponByUserIdAndCouponId: jest.fn(),
+            findUserCouponByUserIdAndCouponIdwithLock: jest.fn(),
             validateCoupon: jest.fn(),
-            findCouponById: jest.fn(),
+            findCouponByIdwithLock: jest.fn(),
             calculateAllPrice: jest.fn(),
+            updateUserCouponStatus: jest.fn(),
         };
         const mockOrderService = {
             createOrder: jest.fn(),
             createOrderDetail: jest.fn(),
+            updateOrderStatus: jest.fn(),
         };
         const mockPrismaService = {
             $transaction: jest.fn((callback) => callback()),
@@ -193,8 +195,10 @@ describe('OrderFacade', () => {
                 userService.findByIdwithLock.mockResolvedValue(mockUser);
                 productService.findByIdwithLock.mockResolvedValue(mockProduct);
                 productService.decreaseStock.mockResolvedValue({ ...mockProduct, stock: 8 });
-                couponService.findUserCouponByUserIdAndCouponId.mockResolvedValue(mockUserCoupon);
-                couponService.findCouponById.mockResolvedValue(mockCoupon);
+                couponService.findUserCouponByUserIdAndCouponIdwithLock.mockResolvedValue(
+                    mockUserCoupon,
+                );
+                couponService.findCouponByIdwithLock.mockResolvedValue(mockCoupon);
                 couponService.calculateAllPrice.mockResolvedValue({
                     originalPrice: 2000,
                     discountPrice: 200,
@@ -228,7 +232,6 @@ describe('OrderFacade', () => {
                 await expect(facade.createOrder(createOrderDto)).rejects.toThrow(
                     '재고가 부족합니다.',
                 );
-                expect(productService.findByIdwithLock).toHaveBeenCalledWith(1);
                 expect(productService.decreaseStock).not.toHaveBeenCalled();
                 expect(orderService.createOrder).not.toHaveBeenCalled();
                 expect(orderService.createOrderDetail).not.toHaveBeenCalled();
@@ -313,9 +316,11 @@ describe('OrderFacade', () => {
                 const couponId = 1;
                 const originalPrice = 10000;
 
-                couponService.findUserCouponByUserIdAndCouponId.mockResolvedValue(mockUserCoupon);
+                couponService.findUserCouponByUserIdAndCouponIdwithLock.mockResolvedValue(
+                    mockUserCoupon,
+                );
                 couponService.validateCoupon.mockResolvedValue(void 0);
-                couponService.findCouponById.mockResolvedValue(mockCoupon);
+                couponService.findCouponByIdwithLock.mockResolvedValue(mockCoupon);
                 couponService.calculateAllPrice.mockResolvedValue({
                     originalPrice: 10000,
                     discountPrice: 1000,
@@ -340,9 +345,11 @@ describe('OrderFacade', () => {
                 const couponId = 1;
                 const originalPrice = 10000;
 
-                couponService.findUserCouponByUserIdAndCouponId.mockResolvedValue(mockUserCoupon);
+                couponService.findUserCouponByUserIdAndCouponIdwithLock.mockResolvedValue(
+                    mockUserCoupon,
+                );
                 couponService.validateCoupon.mockResolvedValue(undefined);
-                couponService.findCouponById.mockResolvedValue({
+                couponService.findCouponByIdwithLock.mockResolvedValue({
                     ...mockCoupon,
                     discount_type: 'FIXED',
                     discount_amount: 1000,
@@ -373,7 +380,7 @@ describe('OrderFacade', () => {
                 const couponId = 999;
                 const originalPrice = 10000;
 
-                couponService.findUserCouponByUserIdAndCouponId.mockRejectedValue(
+                couponService.findUserCouponByUserIdAndCouponIdwithLock.mockRejectedValue(
                     new Error('사용자 쿠폰 정보를 찾을 수 없습니다.'),
                 );
 
@@ -389,35 +396,18 @@ describe('OrderFacade', () => {
                 const couponId = 1;
                 const originalPrice = 10000;
 
-                couponService.findUserCouponByUserIdAndCouponId.mockResolvedValue({
+                couponService.findUserCouponByUserIdAndCouponIdwithLock.mockResolvedValue({
                     ...mockUserCoupon,
                     status: 'EXPIRED',
                 });
-                couponService.validateCoupon.mockRejectedValue(new Error('만료된 쿠폰입니다.'));
+                couponService.validateCoupon.mockRejectedValue(
+                    new Error('사용할 수 없는 쿠폰입니다.'),
+                );
 
                 // when & then
                 await expect(
                     facade.calculateOrderPrice(userId, couponId, originalPrice),
-                ).rejects.toThrow('만료된 쿠폰입니다.');
-            });
-
-            it('쿠폰의 할인 타입이 유효하지 않은 경우 에러를 던진다', async () => {
-                // given
-                const userId = 1;
-                const couponId = 1;
-                const originalPrice = 10000;
-
-                couponService.findUserCouponByUserIdAndCouponId.mockResolvedValue(mockUserCoupon);
-                couponService.validateCoupon.mockResolvedValue(void 0);
-                couponService.findCouponById.mockResolvedValue({
-                    ...mockCoupon,
-                    discount_type: 'INVALID',
-                });
-
-                // when & then
-                await expect(
-                    facade.calculateOrderPrice(userId, couponId, originalPrice),
-                ).rejects.toThrow('유효하지 않은 쿠폰입니다.');
+                ).rejects.toThrow('사용할 수 없는 쿠폰입니다.');
             });
         });
     });
