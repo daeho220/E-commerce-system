@@ -77,7 +77,7 @@ export class ProductRepository implements IProductRepository {
     }> {
         const client = getClient(this.prisma);
 
-        // 상품 목록 조회 (재고 정보의 정확성을 위해 FOR UPDATE 사용)
+        // 상품 목록 조회
         const products = await client.$queryRaw<PrismaProduct[]>`
             SELECT 
                 id,
