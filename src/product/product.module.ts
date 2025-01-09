@@ -7,7 +7,7 @@ import { PrismaModule } from '../database/prisma.module';
 import { CommonValidator } from '../common/common-validator';
 @Module({
     imports: [PrismaModule],
-    controllers: [ProductsMockController],
+    controllers: [],
     providers: [
         ProductService,
         { provide: IPRODUCT_REPOSITORY, useClass: ProductRepository },

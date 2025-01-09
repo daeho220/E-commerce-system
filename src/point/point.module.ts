@@ -3,7 +3,7 @@ import { PointsMockController } from './mock/point.mock.controller';
 
 @Module({
     imports: [],
-    controllers: [PointsMockController],
+    controllers: [],
     providers: [],
 })
 export class PointModule {}

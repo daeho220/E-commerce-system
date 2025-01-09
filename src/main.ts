@@ -7,7 +7,7 @@ async function bootstrap() {
     // Swagger 설정
     const options = new DocumentBuilder()
         .setTitle('E-commerce API')
-        .setDescription('Mock API의 명세서입니다.')
+        .setDescription('API 명세서입니다.')
         .setVersion('1.0')
         .build();
 

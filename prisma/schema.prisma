@@ -58,13 +58,14 @@ model order {
 }
 
 model order_detail {
-  id                Int     @id @default(autoincrement())
+  id                Int      @id @default(autoincrement())
   order_id          Int
   product_id        Int
   quantity          Int
   price_at_purchase Int
-  order             order   @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_detail_ibfk_1")
-  product           product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_detail_ibfk_2")
+  created_at        DateTime @default(dbgenerated("(now())")) @db.DateTime(0)
+  order             order    @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_detail_ibfk_1")
+  product           product  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "order_detail_ibfk_2")
 
   @@index([order_id], map: "order_id")
   @@index([product_id], map: "product_id")
@@ -80,7 +81,7 @@ model payment {
   order          order    @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "payment_ibfk_1")
   user           user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "payment_ibfk_2")
 
-  @@index([order_id], map: "order_id")
+  @@unique([order_id, user_id], map: "payment_index_2")
   @@index([user_id], map: "user_id")
 }
 
