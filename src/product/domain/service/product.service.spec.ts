@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ProductService } from './product.service';
 import { IProductRepository, IPRODUCT_REPOSITORY } from '../product.repository.interface';
 import { product as PrismaProduct } from '@prisma/client';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CommonValidator } from '../../../common/common-validator';
 describe('ProductService', () => {
     let service: ProductService;
@@ -33,6 +33,62 @@ describe('ProductService', () => {
         total_pages: 1,
     };
 
+    const endDate = new Date();
+    const startDate = new Date(endDate);
+    startDate.setDate(endDate.getDate() - 3);
+
+    const mockTopSellingProducts = {
+        products: [
+            {
+                id: 1,
+                product_name: '인기상품 A',
+                price: 10000,
+                stock: 100,
+                total_quantity: 50,
+                total_amount: 500000,
+                order_count: 30,
+            },
+            {
+                id: 2,
+                product_name: '인기상품 B',
+                price: 20000,
+                stock: 50,
+                total_quantity: 40,
+                total_amount: 800000,
+                order_count: 25,
+            },
+            {
+                id: 3,
+                product_name: '인기상품 C',
+                price: 30000,
+                stock: 30,
+                total_quantity: 30,
+                total_amount: 900000,
+                order_count: 20,
+            },
+            {
+                id: 4,
+                product_name: '인기상품 D',
+                price: 40000,
+                stock: 20,
+                total_quantity: 20,
+                total_amount: 800000,
+                order_count: 15,
+            },
+            {
+                id: 5,
+                product_name: '인기상품 E',
+                price: 50000,
+                stock: 10,
+                total_quantity: 10,
+                total_amount: 500000,
+                order_count: 10,
+            },
+        ],
+        start_date: startDate,
+        end_date: endDate,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -44,6 +100,9 @@ describe('ProductService', () => {
                         findByIdwithLock: jest.fn().mockResolvedValue(mockProduct),
                         decreaseStock: jest.fn().mockResolvedValue(mockProduct),
                         findProducts: jest.fn().mockResolvedValue(mockProducts),
+                        findTop5SellingProductsIn3Days: jest
+                            .fn()
+                            .mockResolvedValue(mockTopSellingProducts.products),
                     },
                 },
                 CommonValidator,
@@ -233,6 +292,20 @@ describe('ProductService', () => {
 
                 // when & then
                 expect(() => commonValidator.validateLimit(limit)).toThrow(BadRequestException);
+            });
+        });
+    });
+
+    describe('findTop5SellingProductsIn3Days: 상위 판매 상품 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('최근 3일간의 상위 5개 판매 상품을 조회한다', async () => {
+                // when
+                const result = await service.findTop5SellingProductsIn3Days();
+
+                // then
+                expect(result.products).toHaveLength(5);
+                expect(result.products[0].total_quantity).toBe(50);
+                expect(result.products[1].total_amount).toBe(800000);
             });
         });
     });

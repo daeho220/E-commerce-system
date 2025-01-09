@@ -15,6 +15,21 @@ export interface IProductRepository {
         products: PrismaProduct[];
         total: number;
     }>;
+    findTop5SellingProductsIn3Days(
+        startDate: Date,
+        endDate: Date,
+        limit: number,
+    ): Promise<
+        {
+            id: number;
+            product_name: string;
+            price: number;
+            stock: number;
+            total_quantity: number;
+            total_amount: number;
+            order_count: number;
+        }[]
+    >;
 }
 
 export const IPRODUCT_REPOSITORY = Symbol('IPRODUCT_REPOSITORY');

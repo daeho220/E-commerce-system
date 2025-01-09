@@ -281,4 +281,16 @@ describe('ProductService', () => {
             });
         });
     });
+
+    describe('findTopSellingProducts: 상위 판매 상품 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('최근 3일간의 상위 5개 판매 상품을 조회한다', async () => {
+                // when
+                const result = await service.findTop5SellingProductsIn3Days();
+
+                // then
+                expect(result.products).toHaveLength(5);
+            });
+        });
+    });
 });
