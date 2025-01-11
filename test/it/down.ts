@@ -1,8 +1,9 @@
-import { getDatasource } from "./util";
+import { PrismaClient } from '@prisma/client';
 
 const down = async () => {
-  await global.mysql.stop();
-  await (await getDatasource()).destroy();
+    const prisma = new PrismaClient();
+    await prisma.$disconnect();
+    await global.mysql.stop();
 };
 
 export default down;

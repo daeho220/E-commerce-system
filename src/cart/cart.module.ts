@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { CartsMockController } from './mock/cart.mock.controller';
+// import { CartsMockController } from './mock/cart.mock.controller';
 @Module({
     imports: [],
-    controllers: [CartsMockController],
+    controllers: [],
     providers: [],
 })
 export class CartModule {}
