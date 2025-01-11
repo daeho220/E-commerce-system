@@ -41,20 +41,29 @@ INSERT INTO `product` (`id`, `product_name`, `price`, `status`, `stock`, `create
 (8, 'Product H', 8000, FALSE, 120, NOW(), NOW()),
 (9, 'Product I', 9000, TRUE, 100, NOW(), NOW()),
 (10, 'Product J', 10000, TRUE, 100, NOW(), NOW()),
-(11, 'Product K', 11000, TRUE, 100, NOW(), NOW());
+(11, 'Product K', 11000, TRUE, 100, NOW(), NOW()),
+(12, 'Product L', 12000, TRUE, 100, NOW(), NOW()),
+(13, 'Product M', 13000, TRUE, 100, NOW(), NOW()),
+(14, 'Product N', 14000, TRUE, 100, NOW(), NOW()),
+(15, 'Product O', 15000, TRUE, 100, NOW(), NOW()),
+(16, 'Product P', 16000, TRUE, 100, NOW(), NOW()),
+(17, 'Product Q', 17000, TRUE, 100, NOW(), NOW()),
+(18, 'Product R', 18000, TRUE, 100, NOW(), NOW()),
+(19, 'Product S', 19000, TRUE, 100, NOW(), NOW()),
+(20, 'Product T', 20000, TRUE, 100, NOW(), NOW());
 
 -- ProductSalesStat 테이블 샘플 데이터
 INSERT INTO `product_sales_stat` (`id`, `product_id`, `date`, `order_count`, `sales_quantity`, `sales_amount`, `created_at`, `updated_at`) VALUES
-(1, 1, '2023-10-01', 10, 100, 1000, NOW(), NOW()),
-(2, 2, '2023-10-02', 20, 200, 2000, NOW(), NOW()),
-(3, 3, '2023-10-03', 30, 300, 3000, NOW(), NOW()),
-(4, 4, '2023-10-04', 40, 400, 4000, NOW(), NOW()),
-(5, 5, '2023-10-05', 50, 500, 5000, NOW(), NOW()),
-(6, 6, '2023-10-06', 60, 600, 6000, NOW(), NOW()),
-(7, 7, '2023-10-07', 70, 700, 7000, NOW(), NOW()),
-(8, 8, '2023-10-08', 80, 800, 8000, NOW(), NOW()),
-(9, 9, '2023-10-09', 90, 900, 9000, NOW(), NOW()),
-(10, 10, '2023-10-10', 100, 1000, 10000, NOW(), NOW());
+(1, 1, NOW(), 10, 100, 1000, NOW(), NOW()),
+(2, 2, NOW(), 20, 200, 2000, NOW(), NOW()),
+(3, 3, NOW(), 30, 300, 3000, NOW(), NOW()),
+(4, 4, NOW(), 40, 400, 4000, NOW(), NOW()),
+(5, 5, NOW(), 50, 500, 5000, NOW(), NOW()),
+(6, 6, NOW(), 60, 600, 6000, NOW(), NOW()),
+(7, 7, NOW(), 70, 700, 7000, NOW(), NOW()),
+(8, 8, NOW(), 80, 800, 8000, NOW(), NOW()),
+(9, 9, NOW(), 90, 900, 9000, NOW(), NOW()),
+(10, 10, NOW(), 100, 1000, 10000, NOW(), NOW());
 
 -- CartItems 테이블 샘플 데이터
 INSERT INTO `cart_items` (`id`, `user_id`, `product_id`, `quantity`, `created_at`, `updated_at`) VALUES
