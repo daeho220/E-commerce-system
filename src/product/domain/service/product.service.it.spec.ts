@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductService } from './product.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ProductModule } from '../../product.module';
 import { PrismaModule } from '../../../database/prisma.module';
 
@@ -228,6 +228,68 @@ describe('ProductService', () => {
                 await expect(service.decreaseStock(productId, quantity, undefined)).rejects.toThrow(
                     Error,
                 );
+            });
+        });
+    });
+
+    describe('findProducts: 상품 목록 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('page, limit가 정상적으로 주어지면 상품 목록과 페이지 정보를 반환한다', async () => {
+                // given
+                const page = 1;
+                const limit = 10;
+
+                // when
+                const result = await service.findProducts(page, limit);
+
+                // then
+                expect(result.products.length).toBe(limit);
+                expect(result.current_page).toBe(page);
+                expect(result.limit).toBe(limit);
+                expect(result.total).toBe(17);
+                expect(result.total_pages).toBe(2);
+            });
+        });
+        describe('실패 케이스', () => {
+            it('page가 0이하이면 BadRequestException을 발생시킨다', async () => {
+                // given
+                const page = 0;
+                const limit = 10;
+
+                // when & then
+                await expect(service.findProducts(page, limit)).rejects.toThrow(
+                    BadRequestException,
+                );
+            });
+            it('limit가 0이하이면 BadRequestException을 발생시킨다', async () => {
+                // given
+                const page = 1;
+                const limit = 0;
+
+                // when & then
+                await expect(service.findProducts(page, limit)).rejects.toThrow(
+                    BadRequestException,
+                );
+            });
+            it('상품이 존재하지 않으면, NotFoundException을 발생시킨다', async () => {
+                // given
+                const page = 10;
+                const limit = 10;
+
+                // when & then
+                await expect(service.findProducts(page, limit)).rejects.toThrow(NotFoundException);
+            });
+        });
+    });
+
+    describe('findTopSellingProducts: 상위 판매 상품 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('최근 3일간의 상위 5개 판매 상품을 조회한다', async () => {
+                // when
+                const result = await service.findTop5SellingProductsIn3Days();
+
+                // then
+                expect(result.products).toHaveLength(5);
             });
         });
     });
