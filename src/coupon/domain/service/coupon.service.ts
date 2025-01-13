@@ -1,4 +1,4 @@
-import { Inject, Injectable, ConflictException } from '@nestjs/common';
+import { Inject, Injectable, ConflictException, BadRequestException } from '@nestjs/common';
 import { ICouponRepository, ICOUPON_REPOSITORY } from '../coupon.repository.interface';
 import { user_coupon as PrismaUserCoupon, coupon as PrismaCoupon } from '@prisma/client';
 import { CommonValidator } from '../../../common/common-validator';
@@ -54,11 +54,11 @@ export class CouponService {
     // 사용자 쿠폰 상태 검증
     async validateCoupon(userCoupon: PrismaUserCoupon): Promise<void> {
         if (userCoupon.status !== CouponStatus.AVAILABLE) {
-            throw new Error('사용할 수 없는 쿠폰입니다.');
+            throw new BadRequestException('사용할 수 없는 쿠폰입니다.');
         }
 
         if (userCoupon.expiration_date < new Date()) {
-            throw new Error('만료된 쿠폰입니다.');
+            throw new BadRequestException('만료된 쿠폰입니다.');
         }
     }
 
