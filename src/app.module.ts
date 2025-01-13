@@ -9,6 +9,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AppConfigService } from './configs/configs.service';
 import { UserModule } from './user/user.module';
 import { HistoryModule } from './history/history.module';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './configs/winston.config';
 
 const serviceModules = [
     ProductModule,
@@ -25,6 +27,7 @@ const serviceModules = [
         ...serviceModules,
         ConfigModule.forRoot(AppConfigService.getEnvConfigs()),
         PrismaModule,
+        WinstonModule.forRoot(winstonConfig),
     ],
     controllers: [],
     providers: [],
