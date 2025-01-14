@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { IOrderRepository } from '../domain/order.repository.interface';
 import { order as PrismaOrder, order_detail as PrismaOrderDetail, Prisma } from '@prisma/client';
 import { getClient } from '../../common/util';
 import { OrderStatus } from '../domain/type/order-status.enum';
-import { NotFoundException } from '@nestjs/common';
+import { LoggerUtil } from '../../common/utils/logger.util';
+
 @Injectable()
 export class OrderRepository implements IOrderRepository {
     constructor(private readonly prisma: PrismaService) {}
@@ -19,7 +20,8 @@ export class OrderRepository implements IOrderRepository {
                 data: order,
             });
         } catch (error) {
-            throw new Error(`[주문 생성 오류]: ${error}`);
+            LoggerUtil.error('주문 생성 오류', error, order);
+            throw new InternalServerErrorException(`주문 생성 오류가 발생했습니다.`);
         }
     }
 
@@ -33,7 +35,8 @@ export class OrderRepository implements IOrderRepository {
                 data: orderDetail,
             });
         } catch (error) {
-            throw new Error(`[주문 상세 생성 오류]: ${error}`);
+            LoggerUtil.error('주문 상세 생성 오류', error, orderDetail);
+            throw new InternalServerErrorException(`주문 상세 생성 오류가 발생했습니다.`);
         }
     }
 
@@ -49,7 +52,8 @@ export class OrderRepository implements IOrderRepository {
                 data: { status },
             });
         } catch (error) {
-            throw new Error(`[주문 상태 업데이트 오류]: ${error}`);
+            LoggerUtil.error('주문 상태 업데이트 오류', error, { orderId, status });
+            throw new InternalServerErrorException(`주문 상태 업데이트 오류가 발생했습니다.`);
         }
     }
 
@@ -57,17 +61,26 @@ export class OrderRepository implements IOrderRepository {
         orderId: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaOrder | null> {
-        const client = getClient(this.prisma, tx);
+        try {
+            const client = getClient(this.prisma, tx);
 
-        const result = await client.$queryRaw<
-            PrismaOrder[]
-        >`SELECT * FROM \`order\` WHERE id = ${orderId} FOR UPDATE`;
+            const result = await client.$queryRaw<
+                PrismaOrder[]
+            >`SELECT * FROM \`order\` WHERE id = ${orderId} FOR UPDATE`;
 
-        if (result.length === 0) {
-            throw new NotFoundException(`ID가 ${orderId}인 주문을 찾을 수 없습니다.`);
+            if (result.length === 0) {
+                throw new NotFoundException(`ID가 ${orderId}인 주문을 찾을 수 없습니다.`);
+            }
+
+            return result[0];
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+
+            LoggerUtil.error('주문 조회 오류', error, { orderId });
+            throw new InternalServerErrorException(`주문 조회 중 오류가 발생했습니다.`);
         }
-
-        return result[0];
     }
 
     async findByUserIdandOrderIdwithLock(
@@ -75,18 +88,27 @@ export class OrderRepository implements IOrderRepository {
         orderId: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaOrder> {
-        const client = getClient(this.prisma, tx);
+        try {
+            const client = getClient(this.prisma, tx);
 
-        const result = await client.$queryRaw<
-            PrismaOrder[]
-        >`SELECT * FROM \`order\` WHERE id = ${orderId} AND user_id = ${userId} FOR UPDATE`;
+            const result = await client.$queryRaw<
+                PrismaOrder[]
+            >`SELECT * FROM \`order\` WHERE id = ${orderId} AND user_id = ${userId} FOR UPDATE`;
 
-        if (result.length === 0) {
-            throw new NotFoundException(
-                `주문 ID ${orderId}, 사용자 ID ${userId} 주문을 찾을 수 없습니다.`,
-            );
+            if (result.length === 0) {
+                throw new NotFoundException(
+                    `주문 ID ${orderId}, 사용자 ID ${userId} 주문을 찾을 수 없습니다.`,
+                );
+            }
+
+            return result[0];
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw error;
+            }
+
+            LoggerUtil.error('주문 조회 오류', error, { orderId, userId });
+            throw new InternalServerErrorException(`주문 조회 중 오류가 발생했습니다.`);
         }
-
-        return result[0];
     }
 }

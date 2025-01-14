@@ -5,13 +5,15 @@ import { OrderService } from './order.service';
 import { order as PrismaOrder } from '@prisma/client';
 import { PrismaService } from '../../../database/prisma.service';
 import { OrderStatus } from '../type/order-status.enum';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from '../../../configs/winston.config';
 
 describe('OrderService', () => {
     let service: OrderService;
     let prisma: PrismaService;
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [OrderModule, PrismaModule],
+            imports: [OrderModule, PrismaModule, WinstonModule.forRoot(winstonConfig)],
         }).compile();
 
         service = module.get<OrderService>(OrderService);

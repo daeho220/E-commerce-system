@@ -4,14 +4,16 @@ import { PrismaModule } from '../../database/prisma.module';
 import { OrderFacade } from './order.facade';
 import { FacadeCreateOrderDto } from './dto/facade-create-order.dto';
 import { PrismaService } from '../../database/prisma.service';
-
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from '../../configs/winston.config';
+import { NotFoundException } from '@nestjs/common';
 describe('OrderFacade', () => {
     let service: OrderFacade;
     let prisma: PrismaService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [OrderModule, PrismaModule],
+            imports: [OrderModule, PrismaModule, WinstonModule.forRoot(winstonConfig)],
         }).compile();
 
         service = module.get<OrderFacade>(OrderFacade);
@@ -150,7 +152,7 @@ describe('OrderFacade', () => {
 
                 // when & then
                 await expect(service.createOrder(createOrderDto)).rejects.toThrow(
-                    '유저 정보를 찾을 수 없습니다.',
+                    NotFoundException,
                 );
             });
             it('주문 아이템이 존재하지 않는 경우 에러를 던진다', async () => {

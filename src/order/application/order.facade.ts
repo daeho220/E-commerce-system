@@ -1,4 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import {
+    Injectable,
+    NotFoundException,
+    ConflictException,
+    BadRequestException,
+} from '@nestjs/common';
 import { FacadeCreateOrderDto } from './dto/facade-create-order.dto';
 import { OrderService } from '../domain/service/order.service';
 import { order as PrismaOrder, order_detail as PrismaOrderDetail, Prisma } from '@prisma/client';
@@ -26,7 +31,7 @@ export class OrderFacade {
 
         const errors = await validate(facadeCreateOrderDto);
         if (errors.length > 0) {
-            throw new Error('유효하지 않은 주문 데이터입니다.');
+            throw new BadRequestException('유효하지 않은 주문 데이터입니다.');
         }
         return await this.prisma.$transaction(async (tx) => {
             // 사용자 조회
@@ -43,12 +48,12 @@ export class OrderFacade {
 
                 // 상품 상태 검증
                 if (!productInfo.status) {
-                    throw new Error('판매하지 않는 상품입니다.');
+                    throw new NotFoundException('판매하지 않는 상품입니다.');
                 }
 
                 // 재고 확인
                 if (product.quantity > productInfo.stock) {
-                    throw new Error('재고가 부족합니다.');
+                    throw new ConflictException('재고가 부족합니다.');
                 }
 
                 // 할인 전 가격 계산

@@ -1,6 +1,6 @@
 import { IOrderRepository, IORDER_REPOSITORY } from '../order.repository.interface';
 import { order as PrismaOrder, order_detail as PrismaOrderDetail, Prisma } from '@prisma/client';
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { OrderValidator } from '../../util/order-validator';
 import { OrderDetailValidator } from '../../util/orderDetail-validator';
 import { OrderStatus } from '../type/order-status.enum';
@@ -21,7 +21,7 @@ export class OrderService {
         const validation = OrderValidator.validate(orderData);
 
         if (!validation.isValid) {
-            throw new Error(`유효하지 않은 데이터입니다.`);
+            throw new BadRequestException(`유효하지 않은 데이터입니다.`);
         }
 
         return await this.orderRepository.createOrder(orderData, tx);
@@ -34,7 +34,7 @@ export class OrderService {
         const validation = OrderDetailValidator.validate(orderDetail);
 
         if (!validation.isValid) {
-            throw new Error(`유효하지 않은 데이터입니다.`);
+            throw new BadRequestException(`유효하지 않은 데이터입니다.`);
         }
 
         return await this.orderRepository.createOrderDetail(orderDetail, tx);
