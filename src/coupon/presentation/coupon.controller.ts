@@ -26,11 +26,16 @@ export class CouponController {
         type: [CouponListResponseDto],
     })
     @ApiResponse({ status: 400, description: '잘못된 요청' })
-    @ApiResponse({ status: 404, description: '사용자를 찾을 수 없음' })
+    @ApiResponse({ status: 404, description: '사용자 ID에 해당하는 쿠폰이 없음' })
+    @ApiResponse({ status: 500, description: '쿠폰 목록 조회 중 오류가 발생했습니다.' })
     async getCouponList(
         @Param('userId', ParseIntPipe) userId: number,
     ): Promise<CouponListResponseDto[]> {
         const coupons = await this.couponService.findCouponListByUserId(userId);
+
+        if (coupons.length === 0) {
+            return [];
+        }
 
         return coupons.map((coupon) => ({
             id: coupon.id,
@@ -53,6 +58,7 @@ export class CouponController {
     @ApiResponse({ status: 400, description: '잘못된 요청 (재고 부족, 발급 기간 아님 등)' })
     @ApiResponse({ status: 404, description: '쿠폰 또는 사용자를 찾을 수 없음' })
     @ApiResponse({ status: 409, description: '이미 발급받은 쿠폰' })
+    @ApiResponse({ status: 500, description: '쿠폰 발급 중 오류가 발생했습니다.' })
     async issueCoupon(
         @Body() issueCouponDto: IssueCouponRequestDto,
     ): Promise<IssueCouponResponseDto> {

@@ -178,9 +178,10 @@ describe('CouponService (Integration)', () => {
                 const userId = 9999;
 
                 // when & then
-                await expect(service.findCouponListByUserId(userId)).rejects.toThrow(
-                    '사용자 ID 9999의 쿠폰을 찾을 수 없습니다.',
-                );
+                const result = await service.findCouponListByUserId(userId);
+
+                expect(result).toBeDefined();
+                expect(result.length).toBe(0);
             });
         });
     });
