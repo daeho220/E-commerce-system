@@ -18,7 +18,7 @@ export class LoggingInterceptor implements NestInterceptor {
         this.logger.log({
             level: 'http',
             requestId,
-            message: 'HTTP Request',
+            message: '[Request] HTTP Request',
             timestamp: new Date().toISOString(),
             method,
             url,
@@ -34,7 +34,7 @@ export class LoggingInterceptor implements NestInterceptor {
                     this.logger.log({
                         level: 'http',
                         requestId,
-                        message: 'HTTP Response',
+                        message: '[Response] HTTP Response',
                         timestamp: new Date().toISOString(),
                         method,
                         url,
@@ -44,7 +44,8 @@ export class LoggingInterceptor implements NestInterceptor {
                     });
                 },
                 error: (error) => {
-                    const errorResponse = {
+                    // 서버 에러 로그
+                    this.logger.error({
                         timestamp: new Date().toISOString(),
                         level: 'error',
                         requestId,
@@ -59,18 +60,8 @@ export class LoggingInterceptor implements NestInterceptor {
                         requestBody: body,
                         queryParams: query,
                         pathParams: params,
-                    };
-
-                    if (error.status >= 500) {
-                        // 서버 에러 로그
-                        this.logger.error({
-                            ...errorResponse,
-                            errorStack: error.stack,
-                        });
-                    } else if (error.status >= 400) {
-                        // 클라이언트 에러 로그
-                        this.logger.error(errorResponse);
-                    }
+                        errorStack: error.stack,
+                    });
                 },
             }),
         );

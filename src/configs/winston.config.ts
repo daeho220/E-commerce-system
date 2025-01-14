@@ -4,19 +4,46 @@ import 'winston-daily-rotate-file';
 
 export const winstonConfig = {
     transports: [
-        // 에러 로그 (단일 파일)
         new winston.transports.File({
             filename: 'logs/error.log',
             level: 'error',
-            format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+            format: winston.format.combine(
+                winston.format.timestamp({
+                    format: () =>
+                        new Date().toLocaleString('ko-KR', {
+                            timeZone: 'Asia/Seoul',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            fractionalSecondDigits: 3,
+                        }),
+                }),
+                winston.format.json(),
+                winston.format.prettyPrint(),
+            ),
         }),
-        // HTTP 로그 (날짜별 관리)
-        new winston.transports.DailyRotateFile({
-            filename: 'logs/http/%DATE%.log',
-            datePattern: 'YYYY-MM-DD',
-            zippedArchive: true,
-            maxFiles: null,
-            format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+        new winston.transports.File({
+            filename: 'logs/httpLog.log',
+            format: winston.format.combine(
+                winston.format.timestamp({
+                    format: () =>
+                        new Date().toLocaleString('ko-KR', {
+                            timeZone: 'Asia/Seoul',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            fractionalSecondDigits: 3,
+                        }),
+                }),
+                winston.format.json(),
+                winston.format.prettyPrint(),
+            ),
             level: 'http',
         }),
     ],
