@@ -6,13 +6,15 @@ import { PaymentService } from './payment.service';
 import { PrismaService } from '../../../database/prisma.service';
 import { PaymentMethod } from '../dto/payment-method.enum';
 import { PaymentStatus } from '../dto/payment-status.enum';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from '../../../configs/winston.config';
 describe('PaymentService', () => {
     let service: PaymentService;
     let prisma: PrismaService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [PaymentModule, PrismaModule],
+            imports: [PaymentModule, PrismaModule, WinstonModule.forRoot(winstonConfig)],
         }).compile();
 
         service = module.get<PaymentService>(PaymentService);

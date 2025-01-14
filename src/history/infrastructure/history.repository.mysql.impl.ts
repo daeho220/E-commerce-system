@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { IHistoryRepository } from '../domain/history.repository.interface';
 import { Prisma, point_history as PrismaPointHistory } from '@prisma/client';
 import { getClient } from '../../common/util';
 import { PrismaService } from '../../database/prisma.service';
 import { PointChangeType } from '../domain/type/pointChangeType.enum';
+import { LoggerUtil } from '../../common/utils/logger.util';
 
 @Injectable()
 export class HistoryRepository implements IHistoryRepository {
@@ -25,7 +26,8 @@ export class HistoryRepository implements IHistoryRepository {
                 },
             });
         } catch (error) {
-            throw new Error(`[포인트 히스토리 생성 오류]: ${error}`);
+            LoggerUtil.error('포인트 히스토리 생성 오류', error, { userId, amount, changeType });
+            throw new InternalServerErrorException(`포인트 히스토리 생성 중 오류가 발생했습니다.`);
         }
     }
 }

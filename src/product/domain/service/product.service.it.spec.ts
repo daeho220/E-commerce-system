@@ -7,7 +7,7 @@ import { PrismaModule } from '../../../database/prisma.module';
 describe('ProductService', () => {
     let service: ProductService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [ProductModule, PrismaModule],
         }).compile();

@@ -6,14 +6,16 @@ import { PaymentMethod } from '../domain/dto/payment-method.enum';
 import { PaymentStatus } from '../domain/dto/payment-status.enum';
 import { PaymentFacade } from './payment.facade';
 import { FacadeCreatePaymentDto } from './dto/facade-create-payment.dto';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from '../../configs/winston.config';
 
 describe('PaymentFacade', () => {
     let facade: PaymentFacade;
     let prisma: PrismaService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [PaymentModule, PrismaModule],
+            imports: [PaymentModule, PrismaModule, WinstonModule.forRoot(winstonConfig)],
         }).compile();
 
         facade = module.get<PaymentFacade>(PaymentFacade);
