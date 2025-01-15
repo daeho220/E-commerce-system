@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { IUserRepository, IUSER_REPOSITORY } from '../../domain/user.repository.interface';
 import { user as PrismaUser } from '@prisma/client';
 import { CommonValidator } from '../../../common/common-validator';
@@ -57,11 +57,8 @@ describe('UserService', () => {
                 jest.spyOn(repository, 'findById').mockResolvedValueOnce(null);
                 const userId = 1;
 
-                // when
-                const result = await service.findById(userId);
-
-                // then
-                expect(result).toBeNull();
+                // when & then
+                expect(() => service.findById(userId)).rejects.toThrow(NotFoundException);
             });
 
             // 유저 ID validation 테스트
@@ -128,11 +125,10 @@ describe('UserService', () => {
                 jest.spyOn(repository, 'findByIdwithLock').mockResolvedValueOnce(null);
                 const userId = 1;
 
-                // when
-                const result = await service.findByIdwithLock(userId, undefined);
-
-                // then
-                expect(result).toBeNull();
+                // when & then
+                expect(() => service.findByIdwithLock(userId, undefined)).rejects.toThrow(
+                    NotFoundException,
+                );
             });
         });
     });
@@ -195,12 +191,12 @@ describe('UserService', () => {
 
                 // when
                 jest.spyOn(repository, 'useUserPoint').mockRejectedValueOnce(
-                    new Error('유저 포인트 차감 중 오류가 발생했습니다.'),
+                    new Error('유저 포인트 사용 중 오류가 발생했습니다.'),
                 );
 
                 // then
                 await expect(service.useUserPoint(userId, amount, undefined)).rejects.toThrow(
-                    '유저 포인트 차감 중 오류가 발생했습니다.',
+                    '유저 포인트 사용 중 오류가 발생했습니다.',
                 );
             });
         });

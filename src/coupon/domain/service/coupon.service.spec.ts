@@ -115,14 +115,14 @@ describe('CouponService', () => {
                 jest.spyOn(
                     repository,
                     'findUserCouponByUserIdAndCouponIdwithLock',
-                ).mockRejectedValueOnce(new Error('사용자 쿠폰 정보를 찾을 수 없습니다.'));
+                ).mockRejectedValueOnce(new Error('사용자 쿠폰 조회 중 오류가 발생했습니다.'));
                 const userId = 9999;
                 const couponId = 1;
 
                 // when & then
                 await expect(
                     service.findUserCouponByUserIdAndCouponIdwithLock(userId, couponId, undefined),
-                ).rejects.toThrow('사용자 쿠폰 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow('사용자 쿠폰 조회 중 오류가 발생했습니다.');
             });
 
             it('유효하지 않은 사용자 ID가 주어지면 BadRequestException을 발생시킨다', async () => {
@@ -213,13 +213,13 @@ describe('CouponService', () => {
             it('존재하지 않는 쿠폰 ID로 조회시 에러를 던진다', async () => {
                 // given
                 jest.spyOn(repository, 'findCouponByIdwithLock').mockRejectedValueOnce(
-                    new Error('쿠폰 정보를 찾을 수 없습니다.'),
+                    new Error('쿠폰 조회 중 오류가 발생했습니다.'),
                 );
                 const couponId = 999;
 
                 // when & then
                 await expect(service.findCouponByIdwithLock(couponId, undefined)).rejects.toThrow(
-                    '쿠폰 정보를 찾을 수 없습니다.',
+                    '쿠폰 조회 중 오류가 발생했습니다.',
                 );
             });
         });
@@ -255,7 +255,7 @@ describe('CouponService', () => {
             it('존재하지 않는 사용자 쿠폰 ID가 주어지면 Error를 발생시킨다', async () => {
                 // given
                 jest.spyOn(repository, 'updateUserCouponStatus').mockRejectedValueOnce(
-                    new Error('업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.'),
+                    new Error('사용자 쿠폰 상태 업데이트 중 오류가 발생했습니다.'),
                 );
                 const userCouponId = 9999;
                 const status = CouponStatus.USED;
@@ -263,7 +263,7 @@ describe('CouponService', () => {
                 // when & then
                 await expect(
                     service.updateUserCouponStatus(userCouponId, status, undefined),
-                ).rejects.toThrow('업데이트할 사용자 쿠폰 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow('사용자 쿠폰 상태 업데이트 중 오류가 발생했습니다.');
             });
 
             it('유효하지 않은 쿠폰 상태가 주어지면 BadRequestException을 발생시킨다', async () => {
@@ -297,11 +297,11 @@ describe('CouponService', () => {
                 const userId = 9999;
 
                 jest.spyOn(repository, 'findCouponListByUserId').mockRejectedValueOnce(
-                    new NotFoundException('사용자 ID 9999의 쿠폰을 찾을 수 없습니다.'),
+                    new NotFoundException('사용자 쿠폰 목록 조회 중 오류가 발생했습니다.'),
                 );
                 // when & then
                 await expect(service.findCouponListByUserId(userId)).rejects.toThrow(
-                    '사용자 ID 9999의 쿠폰을 찾을 수 없습니다.',
+                    '사용자 쿠폰 목록 조회 중 오류가 발생했습니다.',
                 );
             });
         });
