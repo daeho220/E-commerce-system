@@ -12,7 +12,7 @@ export class PrismaExceptionFilter implements ExceptionFilter {
         let status = HttpStatus.INTERNAL_SERVER_ERROR; // 기본 상태 코드
         let message = '데이터베이스 오류가 발생했습니다.';
 
-        // 예외 코드에 따라 상태 및 메시지 설정
+        // prisma 예외 코드에 따라 상태 및 메시지 설정
         switch (exception.code) {
             case 'P2000':
                 status = HttpStatus.BAD_REQUEST; // 400

@@ -5,7 +5,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
-
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
