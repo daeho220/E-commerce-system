@@ -48,7 +48,7 @@ describe('CouponService (Integration)', () => {
                 // when & then
                 await expect(
                     service.findUserCouponByUserIdAndCouponIdwithLock(userId, couponId, undefined),
-                ).rejects.toThrow('ID가 1인 사용자와 ID가 9999인 쿠폰을 찾을 수 없습니다.');
+                ).rejects.toThrow('사용자 ID 1가 쿠폰 ID 9999을 가지고 있지 않습니다.');
             });
 
             it('유효하지 않은 사용자 ID가 주어지면 BadRequestException을 발생시킨다', async () => {

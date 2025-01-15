@@ -89,7 +89,7 @@ describe('OrderFacade', () => {
 
                 // when & then
                 await expect(service.createOrder(createOrderDto)).rejects.toThrow(
-                    'ID가 2인 사용자와 ID가 100인 쿠폰을 찾을 수 없습니다.',
+                    '사용자 ID 2가 쿠폰 ID 100을 가지고 있지 않습니다.',
                 );
             });
             it('유저 쿠폰 상태가 AVAILABLE가 아닌 경우 에러를 던진다', async () => {
@@ -140,7 +140,7 @@ describe('OrderFacade', () => {
 
                 // when & then
                 await expect(service.createOrder(createOrderDto)).rejects.toThrow(
-                    'ID가 1인 사용자와 ID가 2인 쿠폰을 찾을 수 없습니다.',
+                    '사용자 ID 1가 쿠폰 ID 2을 가지고 있지 않습니다.',
                 );
             });
             it('유저가 존재하지 않는 경우 에러를 던진다', async () => {
@@ -231,7 +231,7 @@ describe('OrderFacade', () => {
                 // when & then
                 await expect(
                     service.calculateOrderPrice(userId, couponId, originalPrice, undefined),
-                ).rejects.toThrow('ID가 2인 사용자와 ID가 100인 쿠폰을 찾을 수 없습니다.');
+                ).rejects.toThrow('사용자 ID 2가 쿠폰 ID 100을 가지고 있지 않습니다.');
             });
         });
     });

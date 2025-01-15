@@ -3,57 +3,29 @@ import { product as PrismaProduct, Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { getClient } from '../../common/util';
-import { NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { LoggerUtil } from '../../common/utils/logger.util';
+import { NotFoundException } from '@nestjs/common';
+
 @Injectable()
 export class ProductRepository implements IProductRepository {
     constructor(private readonly prisma: PrismaService) {}
 
     async findById(id: number, tx?: Prisma.TransactionClient): Promise<PrismaProduct | null> {
-        try {
-            const client = getClient(this.prisma, tx);
-            const product = await client.product.findUnique({
-                where: { id },
-            });
-
-            if (!product) {
-                throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
-            }
-
-            return product;
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error;
-            }
-
-            LoggerUtil.error('상품 조회 오류', error, { id });
-            throw new InternalServerErrorException(`상품 조회 중 오류가 발생했습니다.`);
-        }
+        const client = getClient(this.prisma, tx);
+        return await client.product.findUnique({
+            where: { id },
+        });
     }
 
     async findByIdwithLock(
         id: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaProduct | null> {
-        try {
-            const client = getClient(this.prisma, tx);
-            const product = await client.$queryRaw<PrismaProduct[]>`
+        const client = getClient(this.prisma, tx);
+        const product = await client.$queryRaw<PrismaProduct[]>`
                 SELECT * FROM product WHERE id = ${id} FOR UPDATE
         `;
 
-            if (product.length === 0) {
-                throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
-            }
-
-            return product[0];
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error;
-            }
-
-            LoggerUtil.error('상품 조회 with lock 오류', error, { id });
-            throw new InternalServerErrorException(`상품 조회 중 오류가 발생했습니다.`);
-        }
+        return product[0];
     }
 
     async decreaseStock(
@@ -61,39 +33,30 @@ export class ProductRepository implements IProductRepository {
         quantity: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaProduct> {
-        try {
-            const client = getClient(this.prisma, tx);
-            const result = await client.product.update({
-                where: {
-                    id,
-                    stock: {
-                        gte: quantity,
-                    },
+        const client = getClient(this.prisma, tx);
+        const result = await client.product.update({
+            where: {
+                id,
+                stock: {
+                    gte: quantity,
                 },
-                data: { stock: { decrement: quantity } },
-            });
+            },
+            data: { stock: { decrement: quantity } },
+        });
 
-            if (!result) {
-                throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
-            }
-
-            // 재고가 0이 되면, 상품 상태 변경
-            if (result.stock === 0) {
-                await client.product.update({
-                    where: { id },
-                    data: { status: false },
-                });
-            }
-
-            return result;
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error;
-            }
-
-            LoggerUtil.error('상품 재고 감소 오류', error, { id, quantity });
-            throw new InternalServerErrorException(`상품 재고 감소 중 오류가 발생했습니다.`);
+        if (!result) {
+            throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
         }
+
+        // 재고가 0이 되면, 상품 상태 변경
+        if (result.stock === 0) {
+            await client.product.update({
+                where: { id },
+                data: { status: false },
+            });
+        }
+
+        return result;
     }
 
     async findProducts(
@@ -103,11 +66,10 @@ export class ProductRepository implements IProductRepository {
         products: PrismaProduct[];
         total: number;
     }> {
-        try {
-            const client = getClient(this.prisma);
+        const client = getClient(this.prisma);
 
-            // 상품 목록 조회
-            const products = await client.$queryRaw<PrismaProduct[]>`
+        // 상품 목록 조회
+        const products = await client.$queryRaw<PrismaProduct[]>`
             SELECT 
                 id,
                 product_name,
@@ -121,28 +83,20 @@ export class ProductRepository implements IProductRepository {
             ORDER BY id DESC
             LIMIT ${limit} OFFSET ${skip}`;
 
-            if (products.length === 0) {
-                throw new NotFoundException('상품이 존재하지 않습니다.');
-            }
+        if (products.length === 0) {
+            throw new NotFoundException('상품이 존재하지 않습니다.');
+        }
 
-            // 전체 상품 수 조회
-            const [{ total }] = await client.$queryRaw<[{ total: number }]>`
+        // 전체 상품 수 조회
+        const [{ total }] = await client.$queryRaw<[{ total: number }]>`
             SELECT COUNT(*) as total
             FROM product
             WHERE status = true`;
 
-            return {
-                products,
-                total,
-            };
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error;
-            }
-
-            LoggerUtil.error('상품 목록 조회 오류', error, { skip, limit });
-            throw new InternalServerErrorException(`상품 목록 조회 중 오류가 발생했습니다.`);
-        }
+        return {
+            products,
+            total,
+        };
     }
 
     async findTop5SellingProductsIn3Days(
@@ -160,21 +114,20 @@ export class ProductRepository implements IProductRepository {
             order_count: number;
         }[]
     > {
-        try {
-            const client = getClient(this.prisma);
+        const client = getClient(this.prisma);
 
-            // 집계 테이블을 활용한 상위 상품 조회
-            const topProducts = await client.$queryRaw<
-                {
-                    id: number;
-                    product_name: string;
-                    price: number;
-                    stock: number;
-                    total_quantity: number;
-                    total_amount: number;
-                    order_count: number;
-                }[]
-            >`
+        // 집계 테이블을 활용한 상위 상품 조회
+        const topProducts = await client.$queryRaw<
+            {
+                id: number;
+                product_name: string;
+                price: number;
+                stock: number;
+                total_quantity: number;
+                total_amount: number;
+                order_count: number;
+            }[]
+        >`
             SELECT 
                 p.id,
                 p.product_name,
@@ -192,26 +145,18 @@ export class ProductRepository implements IProductRepository {
             ORDER BY total_quantity DESC
             LIMIT ${limit}`;
 
-            if (!topProducts || topProducts.length === 0) {
-                throw new NotFoundException('상품이 존재하지 않습니다.');
-            }
-
-            return topProducts as {
-                id: number;
-                product_name: string;
-                price: number;
-                stock: number;
-                total_quantity: number;
-                total_amount: number;
-                order_count: number;
-            }[];
-        } catch (error) {
-            if (error instanceof NotFoundException) {
-                throw error;
-            }
-
-            LoggerUtil.error('상품 판매 순위 조회 오류', error, { startDate, endDate, limit });
-            throw new InternalServerErrorException(`상품 판매 순위 조회 중 오류가 발생했습니다.`);
+        if (!topProducts || topProducts.length === 0) {
+            throw new NotFoundException('상품이 존재하지 않습니다.');
         }
+
+        return topProducts as {
+            id: number;
+            product_name: string;
+            price: number;
+            stock: number;
+            total_quantity: number;
+            total_amount: number;
+            order_count: number;
+        }[];
     }
 }

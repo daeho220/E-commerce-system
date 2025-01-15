@@ -1,11 +1,19 @@
 import { IOrderRepository, IORDER_REPOSITORY } from '../order.repository.interface';
 import { order as PrismaOrder, order_detail as PrismaOrderDetail, Prisma } from '@prisma/client';
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import {
+    Injectable,
+    Inject,
+    BadRequestException,
+    InternalServerErrorException,
+    NotFoundException,
+} from '@nestjs/common';
 import { OrderValidator } from '../../util/order-validator';
 import { OrderDetailValidator } from '../../util/orderDetail-validator';
 import { OrderStatus } from '../type/order-status.enum';
 import { CommonValidator } from '../../../common/common-validator';
 import { OrderStatusValidator } from '../../util/order-status-validator';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { LoggerUtil } from '../../../common/utils/logger.util';
 @Injectable()
 export class OrderService {
     constructor(
@@ -24,7 +32,15 @@ export class OrderService {
             throw new BadRequestException(`유효하지 않은 데이터입니다.`);
         }
 
-        return await this.orderRepository.createOrder(orderData, tx);
+        try {
+            return await this.orderRepository.createOrder(orderData, tx);
+        } catch (error) {
+            LoggerUtil.error('주문 생성 오류', error, orderData);
+            if (error instanceof PrismaClientKnownRequestError) {
+                throw error;
+            }
+            throw new InternalServerErrorException(`주문 생성 중 오류가 발생했습니다.`);
+        }
     }
 
     async createOrderDetail(
@@ -37,7 +53,15 @@ export class OrderService {
             throw new BadRequestException(`유효하지 않은 데이터입니다.`);
         }
 
-        return await this.orderRepository.createOrderDetail(orderDetail, tx);
+        try {
+            return await this.orderRepository.createOrderDetail(orderDetail, tx);
+        } catch (error) {
+            LoggerUtil.error('주문 상세 생성 오류', error, orderDetail);
+            if (error instanceof PrismaClientKnownRequestError) {
+                throw error;
+            }
+            throw new InternalServerErrorException(`주문 상세 생성 중 오류가 발생했습니다.`);
+        }
     }
 
     async findByIdwithLock(
@@ -45,7 +69,22 @@ export class OrderService {
         tx: Prisma.TransactionClient,
     ): Promise<PrismaOrder | null> {
         this.commonValidator.validateOrderId(orderId);
-        return await this.orderRepository.findByIdwithLock(orderId, tx);
+        try {
+            const order = await this.orderRepository.findByIdwithLock(orderId, tx);
+            if (!order) {
+                throw new NotFoundException(`ID가 ${orderId}인 주문을 찾을 수 없습니다.`);
+            }
+            return order;
+        } catch (error) {
+            LoggerUtil.error('주문 조회 오류', error, { orderId });
+            if (
+                error instanceof PrismaClientKnownRequestError ||
+                error instanceof NotFoundException
+            ) {
+                throw error;
+            }
+            throw new InternalServerErrorException(`주문 조회 중 오류가 발생했습니다.`);
+        }
     }
 
     async updateOrderStatus(
@@ -55,7 +94,15 @@ export class OrderService {
     ): Promise<PrismaOrder> {
         this.commonValidator.validateOrderId(orderId);
         OrderStatusValidator.validate(status);
-        return await this.orderRepository.updateOrderStatus(orderId, status, tx);
+        try {
+            return await this.orderRepository.updateOrderStatus(orderId, status, tx);
+        } catch (error) {
+            LoggerUtil.error('주문 상태 업데이트 오류', error, { orderId, status });
+            if (error instanceof PrismaClientKnownRequestError) {
+                throw error;
+            }
+            throw new InternalServerErrorException(`주문 상태 업데이트 오류가 발생했습니다.`);
+        }
     }
 
     async findByUserIdandOrderIdwithLock(
@@ -65,6 +112,29 @@ export class OrderService {
     ): Promise<PrismaOrder> {
         this.commonValidator.validateUserId(userId);
         this.commonValidator.validateOrderId(orderId);
-        return await this.orderRepository.findByUserIdandOrderIdwithLock(userId, orderId, tx);
+        try {
+            const order = await this.orderRepository.findByUserIdandOrderIdwithLock(
+                userId,
+                orderId,
+                tx,
+            );
+
+            if (!order) {
+                throw new NotFoundException(
+                    `주문 ID ${orderId}, 사용자 ID ${userId} 주문을 찾을 수 없습니다.`,
+                );
+            }
+
+            return order;
+        } catch (error) {
+            LoggerUtil.error('주문 조회 오류', error, { userId, orderId });
+            if (
+                error instanceof PrismaClientKnownRequestError ||
+                error instanceof NotFoundException
+            ) {
+                throw error;
+            }
+            throw new InternalServerErrorException(`주문 조회 오류가 발생했습니다.`);
+        }
     }
 }
