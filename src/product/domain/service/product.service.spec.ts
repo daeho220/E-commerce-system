@@ -132,11 +132,8 @@ describe('ProductService', () => {
                 jest.spyOn(repository, 'findById').mockResolvedValueOnce(null);
                 const productId = 1;
 
-                // when
-                const result = await service.findById(productId);
-
-                // then
-                expect(result).toBeNull();
+                // when & then
+                expect(() => service.findById(productId)).rejects.toThrow(NotFoundException);
             });
 
             // 상품 ID validation 테스트
@@ -215,11 +212,10 @@ describe('ProductService', () => {
                 jest.spyOn(repository, 'findByIdwithLock').mockResolvedValueOnce(null);
                 const productId = 1;
 
-                // when
-                const result = await service.findByIdwithLock(productId, undefined);
-
-                // then
-                expect(result).toBeNull();
+                // when & then
+                expect(() => service.findByIdwithLock(productId, undefined)).rejects.toThrow(
+                    NotFoundException,
+                );
             });
         });
     });
