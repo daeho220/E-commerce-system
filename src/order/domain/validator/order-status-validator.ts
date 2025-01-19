@@ -1,4 +1,4 @@
-import { OrderStatus } from '../domain/type/order-status.enum';
+import { OrderStatus } from '../type/order-status.enum';
 import { BadRequestException } from '@nestjs/common';
 export class OrderStatusValidator {
     static validate(status: OrderStatus): void {
