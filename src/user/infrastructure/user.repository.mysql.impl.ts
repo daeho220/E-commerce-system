@@ -4,22 +4,16 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { Prisma } from '@prisma/client';
 import { getClient } from '../../common/util';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, ConflictException } from '@nestjs/common';
 @Injectable()
 export class UserRepository implements IUserRepository {
     constructor(private readonly prisma: PrismaService) {}
 
     async findById(id: number, tx?: Prisma.TransactionClient): Promise<PrismaUser | null> {
         const client = getClient(this.prisma, tx);
-        const user = await client.user.findUnique({
+        return await client.user.findUnique({
             where: { id },
         });
-
-        if (!user) {
-            throw new Error('유저 정보를 찾을 수 없습니다.');
-        }
-
-        return user;
     }
 
     async findByIdwithLock(id: number, tx: Prisma.TransactionClient): Promise<PrismaUser | null> {
@@ -27,11 +21,6 @@ export class UserRepository implements IUserRepository {
         const user = await client.$queryRaw<PrismaUser[]>`
                 SELECT * FROM user WHERE id = ${id} FOR UPDATE
             `;
-
-        if (user.length === 0) {
-            throw new Error('유저 정보를 찾을 수 없습니다.');
-        }
-
         return user[0];
     }
 
@@ -52,7 +41,7 @@ export class UserRepository implements IUserRepository {
         const userData = user[0];
 
         if (userData.point < amount) {
-            throw new Error('유저 포인트 잔고가 부족합니다.');
+            throw new ConflictException('유저 포인트 잔고가 부족합니다.');
         }
 
         const result = await client.user.update({

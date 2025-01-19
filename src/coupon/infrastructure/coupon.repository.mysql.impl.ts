@@ -1,9 +1,8 @@
 import { ICouponRepository } from '../domain/coupon.repository.interface';
 import { coupon as PrismaCoupon, user_coupon as PrismaUserCoupon, Prisma } from '@prisma/client';
-import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { getClient } from '../../common/util';
-import { NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CouponStatus } from '../domain/type/couponStatus.enum';
 @Injectable()
 export class CouponRepository implements ICouponRepository {
@@ -16,14 +15,8 @@ export class CouponRepository implements ICouponRepository {
     ): Promise<PrismaUserCoupon | null> {
         const client = getClient(this.prisma, tx);
         const coupon = await client.$queryRaw<PrismaUserCoupon[]>`  
-            SELECT * FROM user_coupon WHERE user_id = ${userId} AND coupon_id = ${couponId} FOR UPDATE
-        `;
-
-        if (coupon.length === 0) {
-            throw new NotFoundException(
-                `ID가 ${userId}인 사용자와 ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`,
-            );
-        }
+                SELECT * FROM user_coupon WHERE user_id = ${userId} AND coupon_id = ${couponId} FOR UPDATE
+            `;
 
         return coupon[0];
     }
@@ -38,10 +31,6 @@ export class CouponRepository implements ICouponRepository {
             where: { user_id: userId, coupon_id: couponId },
         });
 
-        if (!userCoupon) {
-            return null;
-        }
-
         return userCoupon;
     }
 
@@ -51,12 +40,8 @@ export class CouponRepository implements ICouponRepository {
     ): Promise<PrismaCoupon | null> {
         const client = getClient(this.prisma, tx);
         const coupon = await client.$queryRaw<PrismaCoupon[]>`
-            SELECT * FROM coupon WHERE id = ${couponId} FOR UPDATE
-        `;
-
-        if (coupon.length === 0) {
-            throw new NotFoundException(`ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`);
-        }
+                SELECT * FROM coupon WHERE id = ${couponId} FOR UPDATE
+            `;
 
         return coupon[0];
     }
@@ -67,14 +52,16 @@ export class CouponRepository implements ICouponRepository {
         tx: Prisma.TransactionClient,
     ): Promise<PrismaUserCoupon> {
         const client = getClient(this.prisma, tx);
-        try {
-            return await client.user_coupon.update({
-                where: { id: userCouponId },
-                data: { status },
-            });
-        } catch (error) {
-            throw new Error(`[사용자 쿠폰 상태 업데이트 오류]: ${error}`);
+        const userCoupon = await client.user_coupon.update({
+            where: { id: userCouponId },
+            data: { status },
+        });
+
+        if (!userCoupon) {
+            throw new NotFoundException(`ID가 ${userCouponId}인 사용자 쿠폰을 찾을 수 없습니다.`);
         }
+
+        return userCoupon;
     }
 
     async findCouponListByUserId(userId: number): Promise<PrismaCoupon[]> {
@@ -88,10 +75,6 @@ export class CouponRepository implements ICouponRepository {
                 },
             },
         });
-
-        if (coupon.length === 0) {
-            throw new NotFoundException(`사용자 ID ${userId}의 쿠폰을 찾을 수 없습니다.`);
-        }
 
         return coupon;
     }
@@ -125,7 +108,6 @@ export class CouponRepository implements ICouponRepository {
             where: { id: couponId },
             data: { current_count: { increment: 1 } },
         });
-
         if (!coupon) {
             throw new NotFoundException(`ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`);
         }

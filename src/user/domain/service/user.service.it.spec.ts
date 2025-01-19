@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserModule } from '../../user.module';
 import { PrismaModule } from '../../../database/prisma.module';
 import { PrismaService } from '../../../database/prisma.service';
@@ -9,7 +9,7 @@ describe('UserService', () => {
     let service: UserService;
     let prisma: PrismaService;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [UserModule, PrismaModule],
         }).compile();
@@ -38,7 +38,7 @@ describe('UserService', () => {
 
                 // when & then
                 await expect(service.findById(nonExistentUserId)).rejects.toThrow(
-                    '유저 정보를 찾을 수 없습니다.',
+                    NotFoundException,
                 );
             });
             it('유저 ID가 0이면 유저 조회시 BadRequestException을 발생시킨다', async () => {
@@ -106,7 +106,7 @@ describe('UserService', () => {
                 // when & then
                 await expect(
                     service.findByIdwithLock(nonExistentuserId, undefined),
-                ).rejects.toThrow('유저 정보를 찾을 수 없습니다.');
+                ).rejects.toThrow(NotFoundException);
             });
         });
         it('유저 ID가 0이면 유저 조회시 BadRequestException을 발생시킨다', async () => {

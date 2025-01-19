@@ -4,21 +4,16 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { getClient } from '../../common/util';
 import { NotFoundException } from '@nestjs/common';
+
 @Injectable()
 export class ProductRepository implements IProductRepository {
     constructor(private readonly prisma: PrismaService) {}
 
     async findById(id: number, tx?: Prisma.TransactionClient): Promise<PrismaProduct | null> {
         const client = getClient(this.prisma, tx);
-        const product = await client.product.findUnique({
+        return await client.product.findUnique({
             where: { id },
         });
-
-        if (!product) {
-            throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
-        }
-
-        return product;
     }
 
     async findByIdwithLock(
@@ -27,12 +22,8 @@ export class ProductRepository implements IProductRepository {
     ): Promise<PrismaProduct | null> {
         const client = getClient(this.prisma, tx);
         const product = await client.$queryRaw<PrismaProduct[]>`
-            SELECT * FROM product WHERE id = ${id} FOR UPDATE
+                SELECT * FROM product WHERE id = ${id} FOR UPDATE
         `;
-
-        if (product.length === 0) {
-            throw new NotFoundException(`ID가 ${id}인 상품을 찾을 수 없습니다.`);
-        }
 
         return product[0];
     }

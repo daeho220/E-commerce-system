@@ -21,7 +21,8 @@ export class ProductController {
     })
     @ApiResponse({ status: 404, description: '상품이 존재하지 않습니다.' })
     async getProducts(@Query() query: GetProductsQueryDto): Promise<GetProductsResponseDto> {
-        const { page = 1, limit = 10 } = query;
+        const page = Number(query.page) || 1;
+        const limit = Number(query.limit) || 10;
         return await this.productService.findProducts(page, limit);
     }
 

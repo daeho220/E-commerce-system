@@ -16,16 +16,12 @@ export class HistoryRepository implements IHistoryRepository {
         tx: Prisma.TransactionClient,
     ): Promise<PrismaPointHistory> {
         const client = getClient(this.prisma, tx);
-        try {
-            return await client.point_history.create({
-                data: {
-                    user_id: userId,
-                    amount: amount,
-                    change_type: changeType,
-                },
-            });
-        } catch (error) {
-            throw new Error(`[포인트 히스토리 생성 오류]: ${error}`);
-        }
+        return await client.point_history.create({
+            data: {
+                user_id: userId,
+                amount: amount,
+                change_type: changeType,
+            },
+        });
     }
 }
