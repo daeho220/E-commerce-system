@@ -7,11 +7,12 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
-import { OrderValidator } from '../../util/order-validator';
-import { OrderDetailValidator } from '../../util/orderDetail-validator';
+import { OrderValidator } from '../validator/order-validator';
+import { OrderDetailValidator } from '../validator/orderDetail-validator';
 import { OrderStatus } from '../type/order-status.enum';
 import { CommonValidator } from '../../../common/common-validator';
-import { OrderStatusValidator } from '../../util/order-status-validator';
+import { OrderStatusValidator } from '../validator/order-status-validator';
+
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { LoggerUtil } from '../../../common/utils/logger.util';
 @Injectable()
