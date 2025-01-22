@@ -2,7 +2,7 @@ import { ICouponRepository } from '../domain/coupon.repository.interface';
 import { coupon as PrismaCoupon, user_coupon as PrismaUserCoupon, Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { getClient } from '../../common/util';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { CouponStatus } from '../domain/type/couponStatus.enum';
 @Injectable()
 export class CouponRepository implements ICouponRepository {
@@ -32,6 +32,15 @@ export class CouponRepository implements ICouponRepository {
         });
 
         return userCoupon;
+    }
+
+    async findCouponById(
+        couponId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaCoupon | null> {
+        const client = getClient(this.prisma, tx);
+        const coupon = await client.coupon.findUnique({ where: { id: couponId } });
+        return coupon;
     }
 
     async findCouponByIdwithLock(
@@ -104,12 +113,16 @@ export class CouponRepository implements ICouponRepository {
         tx: Prisma.TransactionClient,
     ): Promise<void> {
         const client = getClient(this.prisma, tx);
-        const coupon = await client.coupon.update({
+
+        const coupon = await this.findCouponById(couponId, tx);
+
+        // if (coupon.max_count <= coupon.current_count) {
+        //     throw new ConflictException(`쿠폰 ID ${couponId}의 재고가 없습니다.`);
+        // }
+
+        await client.coupon.update({
             where: { id: couponId },
             data: { current_count: { increment: 1 } },
         });
-        if (!coupon) {
-            throw new NotFoundException(`ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`);
-        }
     }
 }

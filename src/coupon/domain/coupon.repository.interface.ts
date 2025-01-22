@@ -16,6 +16,7 @@ export interface ICouponRepository {
         couponId: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaCoupon | null>;
+    findCouponById(couponId: number, tx: Prisma.TransactionClient): Promise<PrismaCoupon | null>;
     updateUserCouponStatus(
         userCouponId: number,
         status: string,

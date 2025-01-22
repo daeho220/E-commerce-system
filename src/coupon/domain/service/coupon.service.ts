@@ -16,6 +16,9 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../database/prisma.service';
 import { LoggerUtil } from '../../../common/utils/logger.util';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { LOCK_TTL } from '../../../common/constants/redis.constants';
+import { RedisRedlock } from '../../../database/redis/redis.redlock';
+import { ExecutionError } from 'redlock';
 @Injectable()
 export class CouponService {
     constructor(
@@ -23,6 +26,7 @@ export class CouponService {
         private readonly couponRepository: ICouponRepository,
         private readonly commonValidator: CommonValidator,
         private readonly prisma: PrismaService,
+        private readonly redisRedlock: RedisRedlock,
     ) {}
 
     // 사용자 쿠폰 조회
@@ -177,7 +181,7 @@ export class CouponService {
         }
     }
 
-    // 사용자 쿠폰 발급
+    // 사용자 쿠폰 발급 with 비관적 락
     async createUserCoupon(userId: number, couponId: number): Promise<PrismaUserCoupon> {
         this.commonValidator.validateUserId(userId);
         this.commonValidator.validateCouponId(couponId);
@@ -250,6 +254,91 @@ export class CouponService {
             }
 
             throw new InternalServerErrorException(`쿠폰 생성 중 오류가 발생했습니다.`);
+        }
+    }
+
+    // 사용자 쿠폰 발급 with 분산락
+    async createUserCouponWithDistributedLock(
+        userId: number,
+        couponId: number,
+    ): Promise<PrismaUserCoupon> {
+        const lockKey = `coupon:${couponId}:issue`;
+
+        try {
+            const redlock = await this.redisRedlock.getRedlock();
+            const lock = await redlock.acquire([lockKey], LOCK_TTL);
+
+            try {
+                return await this.prisma.$transaction(async (tx) => {
+                    // 사용자가 이미 해당 쿠폰을 가지고 있는지 검증
+                    const userCoupon =
+                        await this.couponRepository.findUserCouponByUserIdAndCouponId(
+                            userId,
+                            couponId,
+                            tx,
+                        );
+
+                    if (userCoupon) {
+                        throw new ConflictException(
+                            `사용자 ID ${userId}가 이미 쿠폰 ID ${couponId}을 가지고 있습니다.`,
+                        );
+                    }
+
+                    // 해당 쿠폰 조회
+                    const coupon = await this.couponRepository.findCouponById(couponId, tx);
+
+                    // 쿠폰 조회 실패
+                    if (!coupon) {
+                        throw new NotFoundException(`ID가 ${couponId}인 쿠폰을 찾을 수 없습니다.`);
+                    }
+                    // 쿠폰 재고 검증
+                    if (coupon.current_count >= coupon.max_count) {
+                        throw new ConflictException(`쿠폰 ID ${couponId}의 재고가 없습니다.`);
+                    }
+
+                    // 쿠폰 발급 가능일 검증
+                    const now = new Date();
+                    if (now < coupon.issue_start_date || now > coupon.issue_end_date) {
+                        throw new ConflictException(
+                            `쿠폰 ID ${couponId}의 발급 가능일이 아닙니다.`,
+                        );
+                    }
+
+                    // 쿠폰 만료일 계산
+                    let expirationDate: Date;
+                    if (coupon.expiration_type === 'ABSOLUTE') {
+                        expirationDate = coupon.absolute_expiration_date;
+                    } else if (coupon.expiration_type === 'RELATIVE') {
+                        expirationDate = new Date(
+                            new Date().getTime() + coupon.expiration_days * 24 * 60 * 60 * 1000,
+                        );
+                    }
+
+                    // 사용자 쿠폰 생성
+                    const issuedUserCoupon = await this.couponRepository.createUserCoupon(
+                        userId,
+                        couponId,
+                        expirationDate,
+                        tx,
+                    );
+
+                    // 쿠폰 현재 발급 카운트 증가
+                    await this.couponRepository.increaseCouponCurrentCount(couponId, tx);
+
+                    return issuedUserCoupon;
+                });
+            } catch (error) {
+                LoggerUtil.error('분산락 쿠폰 발급 오류', error, { userId, couponId });
+                if (error instanceof ExecutionError) {
+                    throw new ConflictException('쿠폰 발급에 실패했습니다.');
+                }
+                throw error;
+            } finally {
+                await lock.release();
+            }
+        } catch (error) {
+            LoggerUtil.error('분산락 쿠폰 발급 오류', error, { userId, couponId });
+            throw error;
         }
     }
 }
