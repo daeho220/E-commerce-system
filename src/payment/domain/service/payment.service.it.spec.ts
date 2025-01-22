@@ -63,8 +63,8 @@ describe('PaymentService', () => {
             it('동시에 결제를 5개 생성하면 결제는 1개만 생성된다.', async () => {
                 // given
                 const paymentData = {
-                    user_id: 12,
-                    order_id: 12,
+                    user_id: 32,
+                    order_id: 14,
                     payment_method: PaymentMethod.POINT,
                 };
 
