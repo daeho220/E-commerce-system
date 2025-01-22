@@ -84,17 +84,47 @@ export class UserService {
     async chargeUserPoint(
         id: number,
         amount: number,
+        initialPoint: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaUser> {
         this.commonValidator.validateUserId(id);
         this.commonValidator.validatePoint(amount);
         try {
-            return await this.userRepository.chargeUserPoint(id, amount, tx);
+            return await this.userRepository.chargeUserPoint(id, amount, initialPoint, tx);
         } catch (error) {
             LoggerUtil.error('유저 포인트 충전 오류', error, { id, amount });
             if (
                 error instanceof PrismaClientKnownRequestError ||
-                error instanceof NotFoundException
+                error instanceof NotFoundException ||
+                error instanceof ConflictException
+            ) {
+                throw error;
+            }
+            throw new InternalServerErrorException('유저 포인트 충전 중 오류가 발생했습니다.');
+        }
+    }
+
+    async chargeUserPointWithLock(
+        id: number,
+        amount: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaUser> {
+        this.commonValidator.validateUserId(id);
+        this.commonValidator.validatePoint(amount);
+
+        try {
+            const user = await this.userRepository.findById(id, tx);
+            if (!user) {
+                throw new NotFoundException(`ID가 ${id}인 사용자를 찾을 수 없습니다.`);
+            }
+
+            return await this.userRepository.chargeUserPointWithLock(id, amount, tx);
+        } catch (error) {
+            LoggerUtil.error('분산락 유저 포인트 충전 오류', error, { id, amount });
+            if (
+                error instanceof PrismaClientKnownRequestError ||
+                error instanceof NotFoundException ||
+                error instanceof ConflictException
             ) {
                 throw error;
             }

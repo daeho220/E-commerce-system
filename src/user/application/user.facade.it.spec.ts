@@ -54,18 +54,27 @@ describe('UserFacade', () => {
         });
 
         describe('동시성 테스트', () => {
-            it('유저 16에게 1000원을 10번 충전하면 포인트가 10000원 증가한다.', async () => {
+            it('유저 16에게 1000원을 5번 충전하면 포인트가 1000원만 증가한다.', async () => {
                 const userId = 16;
                 const amount = 1000;
-                const times = 10;
+                const times = 5;
 
                 const promises = Array.from({ length: times }, () =>
                     service.chargeUserPoint(userId, amount),
                 );
-                await Promise.all(promises);
+                // when
+                const results = await Promise.allSettled(promises);
+
+                // then
+                const successCount = results.filter(
+                    (result) => result.status === 'fulfilled',
+                ).length;
+                const failCount = results.filter((result) => result.status === 'rejected').length;
 
                 const user = await prisma.user.findUnique({ where: { id: userId } });
-                expect(user?.point).toBe(amount * times);
+                expect(user?.point).toBe(amount);
+                expect(successCount).toBe(1);
+                expect(failCount).toBe(4);
             });
         });
     });
