@@ -138,4 +138,12 @@ export class OrderService {
             throw new InternalServerErrorException(`주문 조회 오류가 발생했습니다.`);
         }
     }
+
+    async findByUserIdandOrderId(
+        userId: number,
+        orderId: number,
+        tx: Prisma.TransactionClient,
+    ): Promise<PrismaOrder> {
+        return await this.orderRepository.findByUserIdandOrderId(userId, orderId, tx);
+    }
 }
