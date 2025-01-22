@@ -11,11 +11,30 @@ INSERT INTO `user` (`id`, `user_name`, `point`, `created_at`, `updated_at`) VALU
 (9, 'Ivy', 900, NOW(), NOW()),
 (10, 'Jack', 1000, NOW(), NOW()),
 (11, 'Kyle', 1000, NOW(), NOW()),
-(12, 'Liam', 0, NOW(), NOW()),
+(12, 'Liam', 10000, NOW(), NOW()),
 (13, 'Mia', 0, NOW(), NOW()),
 (14, 'Noah', 0, NOW(), NOW()),
 (15, 'Olivia', 0, NOW(), NOW()),
-(16, 'William', 0, NOW(), NOW());
+(16, 'William', 0, NOW(), NOW()),
+(17, 'Joice', 0, NOW(), NOW()),
+(18, 'Joe', 0, NOW(), NOW()),
+(19, 'Jenny', 0, NOW(), NOW()),
+(20, 'Jony', 0, NOW(), NOW()),
+(21, 'Kyle', 10000, NOW(), NOW()),
+(22, 'Liam', 10000, NOW(), NOW()),
+(23, 'Mia', 10000, NOW(), NOW()),
+(24, 'Noah', 10000, NOW(), NOW()),
+(25, 'Olivia', 10000, NOW(), NOW()),
+(26, 'William', 10000, NOW(), NOW()),
+(27, 'Joice', 10000, NOW(), NOW()),
+(28, 'Joe', 10000, NOW(), NOW()),
+(29, 'Jenny', 10000, NOW(), NOW()),
+(30, 'Jony', 10000, NOW(), NOW()),
+(31, 'Kyle', 10000, NOW(), NOW()),
+(32, 'Liam', 10000, NOW(), NOW()),
+(33, 'Mia', 10000, NOW(), NOW()),
+(34, 'Miaaa', 10000, NOW(), NOW());
+
 -- PointHistory 테이블 샘플 데이터
 INSERT INTO `point_history` (`id`, `user_id`, `amount`, `change_type`, `created_at`) VALUES
 (1, 1, 50, 'CHARGE', NOW()),
@@ -50,7 +69,12 @@ INSERT INTO `product` (`id`, `product_name`, `price`, `status`, `stock`, `create
 (17, 'Product Q', 17000, TRUE, 100, NOW(), NOW()),
 (18, 'Product R', 18000, TRUE, 100, NOW(), NOW()),
 (19, 'Product S', 19000, TRUE, 100, NOW(), NOW()),
-(20, 'Product T', 20000, TRUE, 100, NOW(), NOW());
+(20, 'Product T', 20000, TRUE, 100, NOW(), NOW()),
+(21, 'Product U', 1000, TRUE, 4, NOW(), NOW()),
+(22, 'Product V', 1000, TRUE, 100, NOW(), NOW()),
+(23, 'Product W', 1000, TRUE, 4, NOW(), NOW()),
+(24, 'Product X', 1000, TRUE, 4, NOW(), NOW());
+
 
 -- ProductSalesStat 테이블 샘플 데이터
 INSERT INTO `product_sales_stat` (`id`, `product_id`, `date`, `order_count`, `sales_quantity`, `sales_amount`, `created_at`, `updated_at`) VALUES
@@ -89,7 +113,12 @@ INSERT INTO `order` (`id`, `user_id`, `user_coupon_id`, `original_price`, `disco
 (7, 7, NULL, 7000, 700, 6300, 'CANCELLED', NOW()),
 (8, 8, NULL, 8000, 800, 7200, 'FAILED', NOW()),
 (9, 9, NULL, 9000, 900, 8100, 'PAID', NOW()),
-(10, 10, NULL, 10000, 1000, 9000, 'PENDING', NOW());
+(10, 10, NULL, 1000, 100, 900, 'PENDING', NOW()),
+(11, 11, NULL, 1000, 100, 900, 'PENDING', NOW()),
+(12, 12, NULL, 1000, 100, 900, 'PENDING', NOW()),
+(13, 13, NULL, 1000, 100, 900, 'PENDING', NOW()),
+(14, 32, NULL, 1000, 100, 900, 'PENDING', NOW()),
+(15, 34, NULL, 1000, 100, 900, 'PENDING', NOW());
 
 -- OrderDetail 테이블 샘플 데이터
 INSERT INTO `order_detail` (`id`, `order_id`, `product_id`, `quantity`, `price_at_purchase`) VALUES
@@ -117,7 +146,10 @@ INSERT INTO `coupon` (`id`, `code`, `discount_amount`, `discount_type`, `expirat
 (9, 'COUPON9', 90, 'PERCENTAGE', 'RELATIVE', 30, NULL, NOW(), NOW(), 0, 100, NOW(), NOW()),
 (10, 'COUPON10', 100, 'AMOUNT', 'RELATIVE', 30, NULL, NOW(), NOW(), 0, 100, NOW(), NOW()),
 (11, 'COUPON11', 100, 'AMOUNT', 'RELATIVE', 30, NULL, DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 100, 100, NOW(), NOW()),
-(12, 'COUPON12', 100, 'AMOUNT', 'RELATIVE', 30, NULL, DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 0, 30, NOW(), NOW());
+(12, 'COUPON12', 100, 'AMOUNT', 'RELATIVE', 30, NULL, DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 0, 30, NOW(), NOW()),
+(13, 'COUPON13', 100, 'AMOUNT', 'RELATIVE', 30, NULL, DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 0, 30, NOW(), NOW()),
+(14, 'COUPON14', 100, 'AMOUNT', 'RELATIVE', 30, NULL, DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 0, 30, NOW(), NOW()),
+(15, 'COUPON15', 100, 'AMOUNT', 'RELATIVE', 30, NULL, DATE_ADD(NOW(), INTERVAL -1 DAY), DATE_ADD(NOW(), INTERVAL 30 DAY), 1, 30, NOW(), NOW());
 
 -- UserCoupon 테이블 샘플 데이터
 INSERT INTO `user_coupon` (`id`, `user_id`, `coupon_id`, `issue_date`, `expiration_date`, `status`) VALUES
@@ -131,4 +163,6 @@ INSERT INTO `user_coupon` (`id`, `user_id`, `coupon_id`, `issue_date`, `expirati
 (8, 8, 8, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 'USED'),
 (9, 9, 9, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 'EXPIRED'),
 (10, 10, 10, DATE_ADD(NOW(), INTERVAL -31 DAY), DATE_ADD(NOW(), INTERVAL -30 DAY), 'AVAILABLE'),
-(11, 1, 3, DATE_ADD(NOW(), INTERVAL -31 DAY), DATE_ADD(NOW(), INTERVAL -30 DAY), 'AVAILABLE');
+(11, 1, 3, DATE_ADD(NOW(), INTERVAL -31 DAY), DATE_ADD(NOW(), INTERVAL -30 DAY), 'AVAILABLE'),
+(12, 19, 15, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 'AVAILABLE'),
+(13, 20, 15, NOW(), DATE_ADD(NOW(), INTERVAL 30 DAY), 'AVAILABLE');
