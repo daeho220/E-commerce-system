@@ -116,8 +116,7 @@ export class PaymentFacade {
             try {
                 return await this.prisma.$transaction(async (tx) => {
                     // 주문 조회
-                    const order = await this.orderService.findByUserIdandOrderId(
-                        facadeCreatePaymentDto.user_id,
+                    const order = await this.orderService.findById(
                         facadeCreatePaymentDto.order_id,
                         tx,
                     );

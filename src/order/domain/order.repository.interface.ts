@@ -20,11 +20,7 @@ export interface IOrderRepository {
         orderId: number,
         tx: Prisma.TransactionClient,
     ): Promise<PrismaOrder>;
-    findByUserIdandOrderId(
-        userId: number,
-        orderId: number,
-        tx: Prisma.TransactionClient,
-    ): Promise<PrismaOrder>;
+    findById(orderId: number, tx: Prisma.TransactionClient): Promise<PrismaOrder>;
 }
 
 export const IORDER_REPOSITORY = Symbol('IORDER_REPOSITORY');

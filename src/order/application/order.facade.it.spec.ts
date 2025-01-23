@@ -272,7 +272,7 @@ describe('OrderFacade', () => {
                 (result) => result.status === 'rejected',
             ) as PromiseRejectedResult[];
             failedResults.forEach((result) => {
-                expect(result.reason.message).toBe('사용할 수 없는 쿠폰입니다.');
+                expect(result.reason.message).toBe('주문 생성에 실패했습니다.');
             });
 
             // 상품 재고 확인 : 1개의 주문만 성공했기에 재고는 1개 줄어들어야한다.
@@ -315,6 +315,39 @@ describe('OrderFacade', () => {
                 where: { id: 4 },
             });
             expect(userCoupon?.status).toBe('AVAILABLE');
+        });
+
+        it('10명의 유저가 재고가 4개인 상품을 주문하면 4명의 유저만 주문이 성공해야한다.', async () => {
+            // given
+            const userIds = Array.from({ length: 10 }, (_, i) => i + 21);
+            const createOrderDtos = userIds.map((userId) => ({
+                user_id: userId,
+                order_items: [{ product_id: 23, quantity: 1 }],
+            }));
+            // when
+            const results = await Promise.allSettled(
+                createOrderDtos.map((createOrderDto) => service.createOrder(createOrderDto)),
+            );
+
+            // then
+            const successCount = results.filter((result) => result.status === 'fulfilled').length;
+            const failCount = results.filter((result) => result.status === 'rejected').length;
+
+            expect(successCount).toBe(4);
+            expect(failCount).toBe(6);
+
+            // 실패한 주문들의 에러 메시지 확인
+            const failedResults = results.filter(
+                (result) => result.status === 'rejected',
+            ) as PromiseRejectedResult[];
+            failedResults.forEach((result) => {
+                expect(result.reason.message).toBe('판매하지 않는 상품입니다.');
+            });
+
+            const product23 = await prisma.product.findUnique({
+                where: { id: 23 },
+            });
+            expect(product23?.stock).toBe(0);
         });
     });
 });
