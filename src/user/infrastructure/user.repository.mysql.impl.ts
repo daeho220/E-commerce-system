@@ -58,7 +58,7 @@ export class UserRepository implements IUserRepository {
     }
 
     // 낙관적 락 사용
-    async chargeUserPoint(
+    async chargeUserPointWithOptimisticLock(
         id: number,
         amount: number,
         initialPoint: number,
@@ -80,8 +80,7 @@ export class UserRepository implements IUserRepository {
         });
     }
 
-    // 분산락 사용
-    async chargeUserPointWithLock(
+    async chargeUserPoint(
         id: number,
         amount: number,
         tx: Prisma.TransactionClient,
