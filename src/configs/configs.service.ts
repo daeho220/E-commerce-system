@@ -15,6 +15,8 @@ export class AppConfigService {
                 DB_USER: Joi.string().default('root'),
                 DB_NAME: Joi.string().default('ecommerce'),
                 DATABASE_URL: Joi.string().default('mysql://root:root@localhost:3306/ecommerce'),
+                REDIS_HOST: Joi.string().default('localhost'),
+                REDIS_PORT: Joi.number().default(6379),
             }),
         };
     }

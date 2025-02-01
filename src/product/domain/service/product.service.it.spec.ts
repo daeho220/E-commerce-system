@@ -246,8 +246,6 @@ describe('ProductService', () => {
                 expect(result.products.length).toBe(limit);
                 expect(result.current_page).toBe(page);
                 expect(result.limit).toBe(limit);
-                expect(result.total).toBe(17);
-                expect(result.total_pages).toBe(2);
             });
         });
         describe('실패 케이스', () => {

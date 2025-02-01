@@ -1,0 +1,12 @@
+{
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "rootDir": "../..",
+    "testEnvironment": "node",
+    "testRegex": ".com.it.spec.ts$",
+    "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "globalSetup": "./test/it/setup.ts",
+    "globalTeardown": "./test/it/down.ts",
+    "verbose": true
+}

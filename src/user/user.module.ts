@@ -7,8 +7,9 @@ import { CommonValidator } from '../common/common-validator';
 import { UserFacade } from './application/user.facade';
 import { HistoryModule } from '../history/history.module';
 import { UserController } from './presentation/user.controller';
+import { RedisModule } from '../database/redis/redis.module';
 @Module({
-    imports: [PrismaModule, HistoryModule],
+    imports: [PrismaModule, HistoryModule, RedisModule],
     controllers: [UserController],
     providers: [
         UserService,
