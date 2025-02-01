@@ -81,7 +81,8 @@ export class UserService {
         }
     }
 
-    async chargeUserPoint(
+    // 포인트 충전 with 낙관적 락
+    async chargeUserPointWithOptimisticLock(
         id: number,
         amount: number,
         initialPoint: number,
@@ -90,7 +91,12 @@ export class UserService {
         this.commonValidator.validateUserId(id);
         this.commonValidator.validatePoint(amount);
         try {
-            return await this.userRepository.chargeUserPoint(id, amount, initialPoint, tx);
+            return await this.userRepository.chargeUserPointWithOptimisticLock(
+                id,
+                amount,
+                initialPoint,
+                tx,
+            );
         } catch (error) {
             LoggerUtil.error('유저 포인트 충전 오류', error, { id, amount });
             if (
@@ -104,7 +110,8 @@ export class UserService {
         }
     }
 
-    async chargeUserPointWithLock(
+    //포인트 충전 with 분산락
+    async chargeUserPoint(
         id: number,
         amount: number,
         tx: Prisma.TransactionClient,
@@ -118,7 +125,7 @@ export class UserService {
                 throw new NotFoundException(`ID가 ${id}인 사용자를 찾을 수 없습니다.`);
             }
 
-            return await this.userRepository.chargeUserPointWithLock(id, amount, tx);
+            return await this.userRepository.chargeUserPoint(id, amount, tx);
         } catch (error) {
             LoggerUtil.error('분산락 유저 포인트 충전 오류', error, { id, amount });
             if (

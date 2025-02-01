@@ -246,4 +246,31 @@ describe('OrderService', () => {
             });
         });
     });
+
+    describe('findById: 주문 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('주문 ID가 정상적으로 주어지면 주문을 조회한다', async () => {
+                // given
+                const orderId = 1;
+
+                // when
+                const result = await service.findById(orderId, undefined);
+
+                // then
+                expect(result).toBeDefined();
+                expect(result.id).toBe(orderId);
+            });
+        });
+        describe('실패 케이스', () => {
+            it('주문 ID가 음수로 주어지면 오류를 던진다', async () => {
+                // given
+                const orderId = -1;
+
+                // when & then
+                await expect(service.findById(orderId, undefined)).rejects.toThrow(
+                    '유효하지 않은 주문 ID입니다.',
+                );
+            });
+        });
+    });
 });
