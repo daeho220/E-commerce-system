@@ -139,11 +139,23 @@ export class OrderService {
         }
     }
 
-    async findByUserIdandOrderId(
-        userId: number,
-        orderId: number,
-        tx: Prisma.TransactionClient,
-    ): Promise<PrismaOrder> {
-        return await this.orderRepository.findByUserIdandOrderId(userId, orderId, tx);
+    async findById(orderId: number, tx: Prisma.TransactionClient): Promise<PrismaOrder> {
+        this.commonValidator.validateOrderId(orderId);
+        try {
+            const order = await this.orderRepository.findById(orderId, tx);
+            if (!order) {
+                throw new NotFoundException(`ID가 ${orderId}인 주문을 찾을 수 없습니다.`);
+            }
+            return order;
+        } catch (error) {
+            LoggerUtil.error('주문 조회 오류', error, { orderId });
+            if (
+                error instanceof PrismaClientKnownRequestError ||
+                error instanceof NotFoundException
+            ) {
+                throw error;
+            }
+            throw new InternalServerErrorException(`주문 조회 오류가 발생했습니다.`);
+        }
     }
 }

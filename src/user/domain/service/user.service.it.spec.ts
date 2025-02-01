@@ -254,17 +254,7 @@ describe('UserService', () => {
                 const userId = 31;
                 const amount = 100;
 
-                const initialUser = await service.findById(userId, undefined);
-
-                const initialPoint = initialUser?.point;
-
-                // when
-                const result = await service.chargeUserPoint(
-                    userId,
-                    amount,
-                    initialPoint,
-                    undefined,
-                );
+                const result = await service.chargeUserPoint(userId, amount, undefined);
 
                 // then
                 expect(result.point).toBe(10100);
@@ -278,7 +268,7 @@ describe('UserService', () => {
                 const amount = 1000;
 
                 // when & then
-                await expect(service.chargeUserPoint(userId, amount, 0, undefined)).rejects.toThrow(
+                await expect(service.chargeUserPoint(userId, amount, undefined)).rejects.toThrow(
                     Error,
                 );
             });
@@ -288,47 +278,20 @@ describe('UserService', () => {
                 const amount = -100;
 
                 // when & then
-                await expect(service.chargeUserPoint(userId, amount, 0, undefined)).rejects.toThrow(
+                await expect(service.chargeUserPoint(userId, amount, undefined)).rejects.toThrow(
                     '유효하지 않은 포인트입니다.',
                 );
             });
         });
         describe('동시성 테스트', () => {
-            it('동일한 유저에 대해 동시에 5번 포인트 충전 요청시 포인트 충전 성공시 유저 정보를 반환한다', async () => {
-                // given
-                const userId = 13;
-                const amount = 100;
-
-                const initialUser = await service.findById(userId, undefined);
-
-                const initialPoint = initialUser?.point;
-
-                const promises = Array.from({ length: 5 }, () =>
-                    prisma.$transaction(async (tx) => {
-                        return await service.chargeUserPoint(userId, amount, initialPoint, tx);
-                    }),
-                );
-                const results = await Promise.allSettled(promises);
-
-                const user = await service.findById(userId, undefined);
-
-                // then
-                expect(results.length).toBe(5);
-                // expect(results.every((result) => result.id === userId)).toBe(true);
-                expect(user?.point).toBe(100);
-            });
             it('0포인트를 가지고 있는 동일한 유저에게 100포인트 충전 10번 동시 요청시, 1000포인트 충전이 되어야한다.', async () => {
                 // given
                 const userId = 14;
                 const amount = 100;
 
-                const initialUser = await service.findById(userId, undefined);
-
-                const initialPoint = initialUser?.point;
-
                 const promises = Array.from({ length: 10 }, () =>
                     prisma.$transaction(async (tx) => {
-                        return await service.chargeUserPoint(userId, amount, initialPoint, tx);
+                        return await service.chargeUserPoint(userId, amount, tx);
                     }),
                 );
                 const results = await Promise.allSettled(promises);
@@ -337,8 +300,7 @@ describe('UserService', () => {
 
                 // then
                 expect(results.length).toBe(10);
-                // expect(results.every((result) => result.id === userId)).toBe(true);
-                expect(user?.point).toBe(100);
+                expect(user?.point).toBe(1000);
             });
         });
     });
