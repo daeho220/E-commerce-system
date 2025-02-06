@@ -407,4 +407,33 @@ describe('CouponService (Integration)', () => {
             });
         });
     });
+
+    describe('checkIssuanceStatus: 쿠폰 발급 상태 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('쿠폰이 발급된 유저와 해당 쿠폰이 주어지면 issued:true를 반환한다', async () => {
+                // given
+                const userId = 1;
+                const couponId = 1;
+
+                // when
+                const result = await service.checkIssuanceStatus(userId, couponId);
+
+                // then
+                expect(result).toBeDefined();
+                expect(result.issued).toBe(true);
+            });
+            it('쿠폰이 발급되지 않은 유저와 해당 쿠폰이 주어지면 issued:false를 반환한다', async () => {
+                // given
+                const userId = 10;
+                const couponId = 2;
+
+                // when
+                const result = await service.checkIssuanceStatus(userId, couponId);
+
+                // then
+                expect(result).toBeDefined();
+                expect(result.issued).toBe(false);
+            });
+        });
+    });
 });

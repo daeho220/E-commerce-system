@@ -63,4 +63,10 @@ export class CouponRedisRepository {
         const userIds = await this.redis.smembers(issuedQueueKey);
         return userIds.map((user) => parseInt(user));
     }
+
+    // 쿠폰 발급 상태 조회
+    async checkIssuanceStatus(userId: number, couponId: number): Promise<number> {
+        const issuedQueueKey = `coupon:${couponId}:issued`;
+        return this.redis.sismember(issuedQueueKey, userId.toString());
+    }
 }

@@ -1,10 +1,10 @@
-import { Controller, Get, Param, ParseIntPipe, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Post, Body, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { CouponService } from '../domain/service/coupon.service';
 import { IssueCouponRequestDto } from './dto/issue-coupon.request.dto';
-import { IssueCouponResponseDto } from './dto/issue-coupon.response.dto';
 import { CouponListResponseDto } from './dto/coupon-list.response.dto';
 import { CouponQueueResponseDto } from './dto/coupon-queue.response.dto';
+import { IssueStatusResponse } from './dto/issue-coupon-status.response.dto';
 
 @ApiTags('Coupons')
 @Controller('coupons')
@@ -69,5 +69,19 @@ export class CouponController {
             status: 'wait_success',
             message: '쿠폰 발급 대기열에 추가되었습니다.',
         };
+    }
+
+    @Get('issue-status')
+    @ApiOperation({
+        summary: '쿠폰 발급 상태 조회',
+        description: '사용자가 쿠폰을 발급 받았는지 여부를 조회합니다.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '쿠폰 발급 상태 조회 성공',
+        type: IssueStatusResponse,
+    })
+    async checkIssuanceStatus(@Query() dto: IssueCouponRequestDto): Promise<IssueStatusResponse> {
+        return this.couponService.checkIssuanceStatus(dto.user_id, dto.coupon_id);
     }
 }

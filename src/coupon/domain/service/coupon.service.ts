@@ -346,4 +346,15 @@ export class CouponService {
             );
         }
     }
+
+    // 쿠폰 발급 상태 조회
+    async checkIssuanceStatus(userId: number, couponId: number): Promise<{ issued: boolean }> {
+        try {
+            const issued = await this.couponRedisRepository.checkIssuanceStatus(userId, couponId);
+            return { issued: issued === 1 };
+        } catch (error) {
+            LoggerUtil.error('쿠폰 발급 상태 조회 오류', error, { userId, couponId });
+            throw error;
+        }
+    }
 }
