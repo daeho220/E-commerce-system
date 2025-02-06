@@ -6,9 +6,15 @@ import { PrismaModule } from '../../../database/prisma.module';
 import { CouponStatus } from '../type/couponStatus.enum';
 import { PrismaService } from '../../../database/prisma.service';
 import { RedisModule } from '../../../database/redis/redis.module';
+import { RedisService } from '../../../database/redis/redis.service';
+import Client from 'ioredis';
+
 describe('CouponService (Integration)', () => {
     let service: CouponService;
     let prisma: PrismaService;
+    let redisService: RedisService;
+    let redis: Client;
+
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CouponModule, PrismaModule, RedisModule],
@@ -16,6 +22,8 @@ describe('CouponService (Integration)', () => {
 
         service = module.get<CouponService>(CouponService);
         prisma = module.get<PrismaService>(PrismaService);
+        redisService = module.get<RedisService>(RedisService);
+        redis = redisService.getClient();
     });
 
     describe('findUserCouponByUserIdAndCouponId: 사용자 쿠폰 조회 테스트', () => {
@@ -302,6 +310,100 @@ describe('CouponService (Integration)', () => {
                 // then
                 expect(userCoupons.length).toBe(3);
                 expect(userCoupons.map((userCoupon) => userCoupon.user_id)).toStrictEqual(userIds);
+            });
+        });
+    });
+
+    describe('findUsersInWaitingQueue & popUsersFromWaitingQueue: 대기열 사용자 추가 후 추출 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 사용자 ID와 쿠폰 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
+                // given
+                const couponId = 1;
+                const userIds = [1, 2, 3, 4, 5];
+                for (const userId of userIds) {
+                    await service.addToWaitingQueue(userId, couponId);
+                }
+
+                // when
+                const result = await service.popUsersFromWaitingQueue(couponId, 3);
+
+                // then
+                expect(result).toStrictEqual([1, 2, 3]);
+                expect(result.length).toBe(3);
+            });
+        });
+    });
+
+    describe('addToIssuedQueue: 쿠폰 발급 완료 목록 추가 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 사용자 ID와 쿠폰 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
+                // given
+                const userIds = [1, 2, 3];
+                const couponId = 1;
+
+                // when
+                await service.addToIssuedQueue(userIds, couponId);
+                const issuedQueue = await redis.smembers(`coupon:${couponId}:issued`);
+
+                // then
+                expect(issuedQueue.map(Number)).toStrictEqual(userIds); // 숫자 변환 비교
+            });
+        });
+    });
+
+    describe('findUsersInIssuedCoupon: 쿠폰 발급 완료 목록 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 쿠폰 ID가 주어지면, 발급 완료 목록을 반환한다', async () => {
+                // given
+                const couponId = 1;
+
+                // when
+                const issuedQueue = await service.findUsersInIssuedCoupon(couponId);
+
+                // then
+                expect(issuedQueue).toStrictEqual([1, 2, 3]);
+            });
+        });
+    });
+
+    describe('addToWaitingQueue: 쿠폰 발급 완료 목록 추가 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 사용자 ID와 쿠폰 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
+                // given
+                const userIds = [1, 2, 3];
+                const couponId = 1;
+
+                // when
+                await service.addToIssuedQueue(userIds, couponId);
+                const issuedQueue = await redis.smembers(`coupon:${couponId}:issued`);
+
+                // then
+                expect(issuedQueue.map(Number)).toStrictEqual(userIds); // 숫자 변환 비교
+            });
+        });
+    });
+
+    describe('findUsersInIssuedCoupon: 쿠폰 발급 완료 목록 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('정상적인 쿠폰 ID가 주어지면, 발급 완료 목록을 반환한다', async () => {
+                // given
+                const couponId = 1;
+
+                // when
+                const issuedQueue = await service.findUsersInIssuedCoupon(couponId);
+
+                // then
+                expect(issuedQueue).toStrictEqual([1, 2, 3]);
+            });
+            it('정상적인 쿠폰 ID가 주어졌지만, 발급 완료 목록이 없으면 빈 배열을 반환한다', async () => {
+                // given
+                const couponId = 2;
+
+                // when
+                const issuedQueue = await service.findUsersInIssuedCoupon(couponId);
+
+                // then
+                expect(issuedQueue).toStrictEqual([]);
             });
         });
     });

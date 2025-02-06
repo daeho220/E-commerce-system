@@ -19,6 +19,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { LOCK_TTL } from '../../../common/constants/redis.constants';
 import { RedisRedlock } from '../../../database/redis/redis.redlock';
 import { ExecutionError } from 'redlock';
+import { CouponRedisRepository } from '../../infrastructure/coupon.repository.redis.impl';
 @Injectable()
 export class CouponService {
     constructor(
@@ -27,6 +28,7 @@ export class CouponService {
         private readonly commonValidator: CommonValidator,
         private readonly prisma: PrismaService,
         private readonly redisRedlock: RedisRedlock,
+        private readonly couponRedisRepository: CouponRedisRepository,
     ) {}
 
     // 사용자 쿠폰 조회
@@ -259,6 +261,56 @@ export class CouponService {
             }
         } catch (error) {
             LoggerUtil.error('분산락 쿠폰 발급 오류', error, { userId, couponId });
+            throw error;
+        }
+    }
+
+    // 쿠폰 발급 대기열 조회
+    async findUsersInWaitingQueue(couponId: number): Promise<number[]> {
+        try {
+            return await this.couponRedisRepository.findUsersInWaitingQueue(couponId);
+        } catch (error) {
+            LoggerUtil.error('쿠폰 발급 대기열 조회 오류', error, { couponId });
+            throw error;
+        }
+    }
+
+    // 쿠폰 발급 대기열 추가
+    async addToWaitingQueue(userId: number, couponId: number): Promise<void> {
+        try {
+            await this.couponRedisRepository.addToWaitingQueue(userId, couponId);
+        } catch (error) {
+            LoggerUtil.error('쿠폰 발급 대기열 추가 오류', error, { userId, couponId });
+            throw error;
+        }
+    }
+
+    // 쿠폰 발급 대기열에서 사용자 추출
+    async popUsersFromWaitingQueue(couponId: number, count: number): Promise<number[]> {
+        try {
+            return await this.couponRedisRepository.popUsersFromWaitingQueue(couponId, count);
+        } catch (error) {
+            LoggerUtil.error('쿠폰 발급 대기열 추출 오류', error, { couponId, count });
+            throw error;
+        }
+    }
+
+    // 쿠폰 발급 완료 목록에 사용자 추가
+    async addToIssuedQueue(userIds: number[], couponId: number): Promise<void> {
+        try {
+            await this.couponRedisRepository.addToIssuedQueue(userIds, couponId);
+        } catch (error) {
+            LoggerUtil.error('쿠폰 발급 완료 목록 추가 오류', error, { userIds, couponId });
+            throw error;
+        }
+    }
+
+    // 해당 쿠폰을 발급 받은 유저 목록 조회
+    async findUsersInIssuedCoupon(couponId: number): Promise<number[]> {
+        try {
+            return await this.couponRedisRepository.findUsersInIssuedCoupon(couponId);
+        } catch (error) {
+            LoggerUtil.error('해당 쿠폰을 발급 받은 유저 목록 조회 오류', error, { couponId });
             throw error;
         }
     }
