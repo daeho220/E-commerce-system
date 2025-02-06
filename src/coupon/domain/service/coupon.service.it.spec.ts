@@ -272,4 +272,37 @@ describe('CouponService (Integration)', () => {
             });
         });
     });
+
+    describe('findIssuableCouponList: 발급 가능한 쿠폰 목록 조회 테스트', () => {
+        describe('성공 케이스', () => {
+            it('발급 가능한 쿠폰 목록을 반환한다', async () => {
+                // when
+                const result = await service.findIssuableCouponList();
+
+                // then
+                expect(result).toBeDefined();
+            });
+        });
+    });
+
+    describe('createUserCoupons: 복수 개의 사용자 쿠폰 생성 테스트', () => {
+        describe('성공 케이스', () => {
+            it('userIds와 쿠폰 ID가 주어지면 사용자 쿠폰 정보를 반환한다', async () => {
+                // given
+                const userIds = [1, 2, 3];
+                const coupon = await service.findCouponByIdwithLock(16, undefined);
+
+                // when
+                await service.createUserCoupons(userIds, coupon);
+
+                const userCoupons = await prisma.user_coupon.findMany({
+                    where: { coupon_id: 16 },
+                });
+
+                // then
+                expect(userCoupons.length).toBe(3);
+                expect(userCoupons.map((userCoupon) => userCoupon.user_id)).toStrictEqual(userIds);
+            });
+        });
+    });
 });
