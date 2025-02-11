@@ -12,6 +12,7 @@ import { HistoryModule } from './history/history.module';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './configs/winston.config';
 import { RedisModule } from './database/redis/redis.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 const serviceModules = [
     ProductModule,
@@ -30,6 +31,7 @@ const serviceModules = [
         PrismaModule,
         WinstonModule.forRoot(winstonConfig),
         RedisModule,
+        ScheduleModule.forRoot(),
     ],
     controllers: [],
     providers: [],

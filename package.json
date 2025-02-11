@@ -17,7 +17,7 @@
         "test:watch": "jest --watch",
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-        "test:e2e": "jest --config ./test/jest-e2e.json",
+        "test:e2e": "jest --config ./test/e2e/e2e.jest.json",
         "test:it": "jest --config ./test/it/it.jest.json --detectOpenHandles",
         "test:unit": "jest --config ./test/unit/unit.jest.json"
     },
@@ -26,6 +26,7 @@
         "@nestjs/config": "^3.2.0",
         "@nestjs/core": "^10.0.0",
         "@nestjs/platform-express": "^10.0.0",
+        "@nestjs/schedule": "^5.0.1",
         "@nestjs/swagger": "^8.1.0",
         "@nestjs/typeorm": "^10.0.2",
         "@prisma/client": "^6.1.0",
@@ -87,6 +88,11 @@
             "**/*.(t|j)s"
         ],
         "coverageDirectory": "../coverage",
-        "testEnvironment": "node"
+        "testEnvironment": "node",
+        "globals": {
+            "crypto": {
+                "randomUUID": "require('crypto').randomUUID"
+            }
+        }
     }
 }

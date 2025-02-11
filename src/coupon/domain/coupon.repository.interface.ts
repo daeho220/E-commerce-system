@@ -30,6 +30,12 @@ export interface ICouponRepository {
         tx: Prisma.TransactionClient,
     ): Promise<PrismaUserCoupon>;
     increaseCouponCurrentCount(couponId: number, tx: Prisma.TransactionClient): Promise<void>;
+    findIssuableCouponList(): Promise<PrismaCoupon[]>;
+    createUserCoupons(
+        userIds: number[],
+        coupon: PrismaCoupon,
+        tx: Prisma.TransactionClient,
+    ): Promise<void>;
 }
 
 export const ICOUPON_REPOSITORY = Symbol('ICOUPON_REPOSITORY');

@@ -114,7 +114,7 @@ export class CouponRepository implements ICouponRepository {
     ): Promise<void> {
         const client = getClient(this.prisma, tx);
 
-        const coupon = await this.findCouponById(couponId, tx);
+        // const coupon = await this.findCouponById(couponId, tx);
 
         // if (coupon.max_count <= coupon.current_count) {
         //     throw new ConflictException(`쿠폰 ID ${couponId}의 재고가 없습니다.`);
@@ -123,6 +123,46 @@ export class CouponRepository implements ICouponRepository {
         await client.coupon.update({
             where: { id: couponId },
             data: { current_count: { increment: 1 } },
+        });
+    }
+
+    async findIssuableCouponList(): Promise<PrismaCoupon[]> {
+        const client = getClient(this.prisma);
+        const issuableCoupons = await client.coupon.findMany({
+            where: {
+                issue_start_date: { lte: new Date() },
+                issue_end_date: { gte: new Date() },
+                current_count: { lt: this.prisma.coupon.fields.max_count },
+            },
+        });
+        return issuableCoupons;
+    }
+
+    async createUserCoupons(
+        userIds: number[],
+        coupon: PrismaCoupon,
+        tx: Prisma.TransactionClient,
+    ): Promise<void> {
+        const client = getClient(this.prisma, tx);
+
+        // 복수 개의 사용자 쿠폰 생성
+        await client.user_coupon.createMany({
+            data: userIds.map((userId) => ({
+                user_id: userId,
+                coupon_id: coupon.id,
+                status: CouponStatus.AVAILABLE,
+                issue_date: new Date(),
+                expiration_date:
+                    coupon.expiration_type === 'ABSOLUTE'
+                        ? coupon.absolute_expiration_date
+                        : new Date(Date.now() + coupon.expiration_days * 86400000),
+            })),
+        });
+
+        // 쿠폰 발급 수량 증가
+        await client.coupon.update({
+            where: { id: coupon.id },
+            data: { current_count: { increment: userIds.length } },
         });
     }
 }

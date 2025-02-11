@@ -1,9 +1,10 @@
-import { Controller, Get, Param, ParseIntPipe, Post, Body } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Post, Body, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { CouponService } from '../domain/service/coupon.service';
 import { IssueCouponRequestDto } from './dto/issue-coupon.request.dto';
-import { IssueCouponResponseDto } from './dto/issue-coupon.response.dto';
 import { CouponListResponseDto } from './dto/coupon-list.response.dto';
+import { CouponQueueResponseDto } from './dto/coupon-queue.response.dto';
+import { IssueStatusResponse } from './dto/issue-coupon-status.response.dto';
 
 @ApiTags('Coupons')
 @Controller('coupons')
@@ -52,27 +53,35 @@ export class CouponController {
     })
     @ApiResponse({
         status: 201,
-        description: '쿠폰 발급 성공',
-        type: IssueCouponResponseDto,
+        description: '쿠폰 발급 대기열 추가 성공',
+        type: CouponQueueResponseDto,
     })
-    @ApiResponse({ status: 400, description: '잘못된 요청 (재고 부족, 발급 기간 아님 등)' })
-    @ApiResponse({ status: 404, description: '쿠폰 또는 사용자를 찾을 수 없음' })
-    @ApiResponse({ status: 409, description: '이미 발급받은 쿠폰' })
-    @ApiResponse({ status: 500, description: '쿠폰 발급 중 오류가 발생했습니다.' })
+    @ApiResponse({ status: 500, description: '쿠폰 발급 대기열 추가 중 오류가 발생했습니다.' })
     async issueCoupon(
         @Body() issueCouponDto: IssueCouponRequestDto,
-    ): Promise<IssueCouponResponseDto> {
-        const result = await this.couponService.createUserCoupon(
+    ): Promise<CouponQueueResponseDto> {
+        await this.couponService.addToWaitingQueue(
             issueCouponDto.user_id,
             issueCouponDto.coupon_id,
         );
 
         return {
-            id: result.id,
-            user_id: result.user_id,
-            coupon_id: result.coupon_id,
-            status: result.status,
-            expiration_date: result.expiration_date,
+            status: 'wait_success',
+            message: '쿠폰 발급 대기열에 추가되었습니다.',
         };
+    }
+
+    @Get('issue-status')
+    @ApiOperation({
+        summary: '쿠폰 발급 상태 조회',
+        description: '사용자가 쿠폰을 발급 받았는지 여부를 조회합니다.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: '쿠폰 발급 상태 조회 성공',
+        type: IssueStatusResponse,
+    })
+    async checkIssuanceStatus(@Query() dto: IssueCouponRequestDto): Promise<IssueStatusResponse> {
+        return this.couponService.checkIssuanceStatus(dto.user_id, dto.coupon_id);
     }
 }
