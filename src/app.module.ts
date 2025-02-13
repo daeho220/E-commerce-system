@@ -13,6 +13,7 @@ import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './configs/winston.config';
 import { RedisModule } from './database/redis/redis.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CqrsModule } from '@nestjs/cqrs';
 
 const serviceModules = [
     ProductModule,
@@ -32,6 +33,7 @@ const serviceModules = [
         WinstonModule.forRoot(winstonConfig),
         RedisModule,
         ScheduleModule.forRoot(),
+        CqrsModule.forRoot(),
     ],
     controllers: [],
     providers: [],

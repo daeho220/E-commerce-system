@@ -12,16 +12,19 @@ import { IPAYMENT_REPOSITORY } from './domain/payment.repository.interface';
 import { OrderModule } from '../order/order.module';
 import { HistoryModule } from '../history/history.module';
 import { PaymentController } from './presentation/payment.controller';
+import { CqrsModule } from '@nestjs/cqrs';
+import { CompleteCreatePaymentHandler } from './event/complete-create-payment.handler';
 
 const modules = [UserModule, ProductModule, CouponModule, OrderModule, HistoryModule];
 @Module({
-    imports: [PrismaModule, ...modules],
+    imports: [PrismaModule, ...modules, CqrsModule],
     controllers: [PaymentController],
     providers: [
         CommonValidator,
         PaymentService,
         PaymentFacade,
         { provide: IPAYMENT_REPOSITORY, useClass: PaymentRepository },
+        CompleteCreatePaymentHandler,
     ],
     exports: [PaymentService, PaymentFacade],
 })

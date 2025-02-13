@@ -12,12 +12,14 @@ import { PaymentStatus } from '../domain/dto/payment-status.enum';
 import { PaymentMethod } from '../domain/dto/payment-method.enum';
 import { PointChangeType } from '../../history/domain/type/pointChangeType.enum';
 import { HistoryService } from '../../history/domain/service/history.service';
-import { FakeDataPlatform } from '../../common/fakeDataplatform';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { LoggerUtil } from '../../common/utils/logger.util';
 import { ExecutionError } from 'redlock';
 import { RedisRedlock } from '../../database/redis/redis.redlock';
 import { LOCK_TTL } from '../../common/constants/redis.constants';
+import { EventBus } from '@nestjs/cqrs';
+import { CompleteCreatePaymentEvent } from '../event/complete-create-payment.event';
+
 @Injectable()
 export class PaymentFacade {
     constructor(
@@ -27,6 +29,7 @@ export class PaymentFacade {
         private readonly historyService: HistoryService,
         private readonly prisma: PrismaService,
         private readonly redisRedlock: RedisRedlock,
+        private readonly eventBus: EventBus,
     ) {}
 
     // 비관적 락
@@ -114,7 +117,7 @@ export class PaymentFacade {
             });
 
             try {
-                return await this.prisma.$transaction(async (tx) => {
+                const result = await this.prisma.$transaction(async (tx) => {
                     // 주문 조회
                     const order = await this.orderService.findById(
                         facadeCreatePaymentDto.order_id,
@@ -167,12 +170,12 @@ export class PaymentFacade {
                         tx,
                     );
 
-                    // 데이터 플랫폼 전송
-                    const fakeDataPlatform = new FakeDataPlatform();
-                    fakeDataPlatform.send();
-
                     return result;
                 });
+
+                // 결제 완료 이벤트 발행
+                this.eventBus.publish(new CompleteCreatePaymentEvent(result.id));
+                return result;
             } catch (error) {
                 LoggerUtil.error('결제 생성 오류', error, { dto });
                 throw error;
