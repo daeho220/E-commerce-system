@@ -3,8 +3,6 @@ import { PrismaService } from '../../database/prisma.service';
 import { IPaymentRepository } from '../domain/payment.repository.interface';
 import { payment as PrismaPayment, Prisma } from '@prisma/client';
 import { getClient } from '../../common/util';
-import { NotFoundException, InternalServerErrorException } from '@nestjs/common';
-import { LoggerUtil } from '../../common/utils/logger.util';
 @Injectable()
 export class PaymentRepository implements IPaymentRepository {
     constructor(private readonly prisma: PrismaService) {}

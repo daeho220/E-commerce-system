@@ -98,6 +98,18 @@ CREATE TABLE `payment` (
   `created_at` datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 
+CREATE TABLE `outbox` (
+  `id` int PRIMARY KEY AUTO_INCREMENT,
+  `topic` varchar(255) NOT NULL,
+  `key` varchar(255) DEFAULT NULL,
+  `message` text NOT NULL,
+  `status` ENUM('INIT', 'PUBLISHED') NOT NULL DEFAULT 'INIT',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX `idx_status` ON `outbox` (`status`);
+
 CREATE UNIQUE INDEX `product_sales_stat_index_0` ON `product_sales_stat` (`product_id`, `date`);
 
 CREATE INDEX `product_sales_stat_index_1` ON `product_sales_stat` (`date`);

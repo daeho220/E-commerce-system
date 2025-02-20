@@ -174,7 +174,7 @@ export class PaymentFacade {
                 });
 
                 // 결제 완료 이벤트 발행
-                this.eventBus.publish(new CompleteCreatePaymentEvent(result.id));
+                this.eventBus.publish(new CompleteCreatePaymentEvent(result.id, result.order_id));
                 return result;
             } catch (error) {
                 LoggerUtil.error('결제 생성 오류', error, { dto });
