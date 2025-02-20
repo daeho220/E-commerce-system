@@ -8,8 +8,16 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { MicroserviceOptions } from '@nestjs/microservices';
+import { AppConfigService } from './configs/configs.service';
+import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    const configService = app.get(ConfigService);
+
+    app.connectMicroservice<MicroserviceOptions>(AppConfigService.getKafkaConfigs(configService));
+    await app.startAllMicroservices();
 
     // 전역 필터 설정
     app.useGlobalFilters(new HttpExceptionFilter(), new PrismaExceptionFilter());
