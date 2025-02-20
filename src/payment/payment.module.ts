@@ -57,6 +57,7 @@ const modules = [UserModule, ProductModule, CouponModule, OrderModule, HistoryMo
         PaymentFacade,
         { provide: IPAYMENT_REPOSITORY, useClass: PaymentRepository },
         CompleteCreatePaymentHandler,
+        OutboxScheduler,
     ],
     exports: [PaymentService, PaymentFacade],
 })
