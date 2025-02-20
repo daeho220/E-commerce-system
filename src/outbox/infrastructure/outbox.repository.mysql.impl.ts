@@ -18,9 +18,15 @@ export class OutboxRepository implements IOutboxRepository {
 
     async findOutboxInitStatus(): Promise<PrismaOutbox[]> {
         const client = getClient(this.prisma);
+
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
         const outbox = await client.outbox.findMany({
             where: {
                 status: 'INIT',
+                created_at: {
+                    lte: fiveMinutesAgo,
+                },
             },
         });
         return outbox;
