@@ -38,6 +38,36 @@ services:
             KAFKA_NUM_PARTITIONS: 3
             KAFKA_DEFAULT_REPLICATION_FACTOR: 3
 
+    kafka-cluster2:
+        image: confluentinc/cp-kafka:latest
+        ports:
+            - '9093:9093'
+        depends_on:
+            - zookeeper
+        environment:
+            KAFKA_BROKER_ID: 2
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+            KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-cluster2:29093,EXTERNAL://localhost:9093
+            KAFKA_NUM_PARTITIONS: 3
+            KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+
+    kafka-cluster3:
+        image: confluentinc/cp-kafka:latest
+        ports:
+            - '9094:9094'
+        depends_on:
+            - zookeeper
+        environment:
+            KAFKA_BROKER_ID: 3
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+            KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka-cluster3:29094,EXTERNAL://localhost:9094
+            KAFKA_NUM_PARTITIONS: 3
+            KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+
     kafka-ui:
         image: provectuslabs/kafka-ui:latest
         ports:
